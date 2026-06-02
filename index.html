@@ -148,6 +148,31 @@
     .bubble.md hr { border:none; border-top:1px solid rgba(168,123,39,0.2); margin:8px 0; }
     .source-tag { display:inline-block; margin-top:10px; padding:3px 10px; background:rgba(168,123,39,0.1); border:1px solid rgba(168,123,39,0.25); border-radius:100px; font-size:0.72rem; color:var(--gold); font-weight:500; }
 
+    /* ── ACTIONS SOUS LES RÉPONSES ───── */
+    .msg-actions { display:flex; gap:6px; margin-top:6px; padding-left:46px; flex-wrap:wrap; }
+    .msg-action-btn {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:4px 10px; border-radius:8px; border:1px solid rgba(168,123,39,0.2);
+      background:rgba(255,255,255,0.7); color:var(--text-muted);
+      font-size:0.72rem; font-weight:500; cursor:pointer; transition:all 0.15s;
+    }
+    .msg-action-btn:hover { border-color:var(--gold); color:var(--navy); background:white; }
+    .msg-action-btn.copied { color:#2e7d32; border-color:#2e7d32; background:rgba(46,125,50,0.06); }
+    .msg-action-btn.liked  { color:var(--gold); border-color:var(--gold); }
+    .msg-action-btn.disliked { color:var(--alert); border-color:var(--alert); }
+
+    /* ── SUGGESTIONS "VOIR AUSSI" ──── */
+    .suggestions-wrap { padding-left:46px; margin-top:4px; }
+    .suggestions-label { font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:5px; }
+    .suggestions-chips { display:flex; gap:6px; flex-wrap:wrap; }
+    .sugg-chip {
+      padding:5px 11px; border-radius:100px; border:1px solid rgba(168,123,39,0.25);
+      background:rgba(168,123,39,0.06); color:var(--navy); font-size:0.75rem;
+      cursor:pointer; transition:all 0.15s;
+    }
+    .sugg-chip:hover { background:var(--navy); color:white; border-color:var(--navy); }
+    /* ──────────────────────────────── */
+
     /* ── ANNUAIRE PANEL ─────────────────────────── */
     .annuaire-overlay {
       display:none; position:fixed; inset:0; background:rgba(17,32,51,0.45);
@@ -387,33 +412,44 @@ const inputEl   = document.getElementById('userInput');
 const sendBtnEl = document.getElementById('sendBtn');
 const typingEl  = document.getElementById('typing');
 
-inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) sendMessage(); });
+// ── Mémoire de conversation (max 6 échanges = 12 messages) ──
+const conversationHistory = [];
 
+inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) sendMessage(); });
 function ask(q) { inputEl.value = q; sendMessage(); }
+
+// ── Logging Google Sheets ────────────────────────────────────
+async function logQuestion(question, reponse, type) {
+  try {
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, reponse, type })
+    });
+  } catch(e) { /* silencieux */ }
+}
 
 async function sendAlertEmail(question) {
   try {
     await fetch('/api/alert', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question,
-        date: new Date().toLocaleString('fr-FR')
-      })
+      body: JSON.stringify({ question, date: new Date().toLocaleString('fr-FR') })
     });
-  } catch(e) {
-    console.warn('Erreur alerte email:', e);
-  }
+  } catch(e) { /* silencieux */ }
 }
 
+// ── Envoi du message ─────────────────────────────────────────
 async function sendMessage() {
   const msg = inputEl.value.trim();
   if (!msg) return;
 
-  const welcome = document.getElementById('welcome');
-  if (welcome) welcome.remove();
-
+  document.getElementById('welcome')?.remove();
   addBubble(msg, 'user');
+
+  // Ajouter à l'historique
+  conversationHistory.push({ role: 'user', content: msg });
+
   inputEl.value = '';
   inputEl.disabled = true;
   sendBtnEl.disabled = true;
@@ -424,16 +460,21 @@ async function sendMessage() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: msg }] })
+      body: JSON.stringify({ messages: conversationHistory.slice(-6) })
     });
     const data = await res.json();
     typingEl.classList.remove('active');
 
     if (data.hors_base === true) {
-      addAlertBubble();
+      addAlertBubble(msg);
       sendAlertEmail(msg);
+      logQuestion(msg, '', 'hors_base');
+      conversationHistory.push({ role: 'assistant', content: '[Information non disponible dans la base]' });
     } else if (data.text) {
-      addBubble(data.text.trim(), 'assistant');
+      const txt = data.text.trim();
+      addAssistantBubble(txt, msg, data.suggestions || []);
+      logQuestion(msg, txt, 'reponse');
+      conversationHistory.push({ role: 'assistant', content: txt });
     } else if (data.error) {
       throw new Error(data.error);
     } else {
@@ -449,6 +490,85 @@ async function sendMessage() {
   }
 }
 
+// ── Bulle réponse assistant avec actions + suggestions ───────
+function addAssistantBubble(text, question, suggestions) {
+  const bubbleId = 'bubble-' + Date.now();
+
+  // Message
+  const wrap = document.createElement('div');
+  wrap.className = 'msg assistant';
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.style.cssText = 'background:linear-gradient(135deg,#112033,#1e3a5f);color:#A87B27';
+  av.textContent = '✦';
+  const bub = document.createElement('div');
+  bub.className = 'bubble md';
+  bub.id = bubbleId;
+  bub.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
+  wrap.appendChild(av);
+  wrap.appendChild(bub);
+  chatEl.insertBefore(wrap, typingEl);
+
+  // Boutons d'action
+  const actions = document.createElement('div');
+  actions.className = 'msg-actions';
+  actions.innerHTML = `
+    <button class="msg-action-btn" onclick="copyResponse('${bubbleId}', this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copier
+    </button>
+    <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'positif')" title="Réponse utile">
+      👍 Utile
+    </button>
+    <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'negatif')" title="Réponse incorrecte">
+      👎 Incorrecte
+    </button>`;
+  chatEl.insertBefore(actions, typingEl);
+
+  // Suggestions "Voir aussi"
+  const filtered = suggestions.filter(s => s && s.length > 0).slice(0, 3);
+  if (filtered.length > 0) {
+    const sugg = document.createElement('div');
+    sugg.className = 'suggestions-wrap';
+    sugg.innerHTML = `
+      <div class="suggestions-label">Voir aussi</div>
+      <div class="suggestions-chips">
+        ${filtered.map(s => `<button class="sugg-chip" onclick="ask('${s.replace(/'/g, "\\'")}')">${s}</button>`).join('')}
+      </div>`;
+    chatEl.insertBefore(sugg, typingEl);
+  }
+
+  scrollDown();
+}
+
+// ── Copier la réponse ────────────────────────────────────────
+function copyResponse(bubbleId, btn) {
+  const bub = document.getElementById(bubbleId);
+  if (!bub) return;
+  const text = bub.innerText || bub.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '✓ Copié';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier`;
+    }, 2000);
+  });
+}
+
+// ── Feedback 👍/👎 ───────────────────────────────────────────
+function sendFeedback(btn, questionEncoded, type) {
+  const question = decodeURIComponent(questionEncoded);
+  logQuestion(question, '', 'feedback_' + type);
+  btn.classList.add(type === 'positif' ? 'liked' : 'disliked');
+  btn.disabled = true;
+  // Désactiver l'autre bouton feedback
+  const sibling = btn.parentElement.querySelector(type === 'positif'
+    ? '[onclick*="negatif"]' : '[onclick*="positif"]');
+  if (sibling) sibling.disabled = true;
+}
+
+// ── Bulles standard ──────────────────────────────────────────
 function addBubble(text, role) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${role}`;
@@ -469,7 +589,7 @@ function addBubble(text, role) {
   scrollDown();
 }
 
-function addAlertBubble() {
+function addAlertBubble(question) {
   const wrap = document.createElement('div');
   wrap.className = 'msg assistant';
   const av = document.createElement('div');

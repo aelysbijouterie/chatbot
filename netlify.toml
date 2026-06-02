@@ -15,3 +15,8 @@
   from = "/api/alert"
   to = "/.netlify/functions/alert"
   status = 200
+
+[[redirects]]
+  from = "/api/log"
+  to = "/.netlify/functions/log"
+  status = 200
