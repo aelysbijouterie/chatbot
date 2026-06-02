@@ -1,0 +1,159 @@
+[
+  {
+    "service": "Direction & Coordination",
+    "nom": "Manon Mignot",
+    "poste": "Responsable Marketing & Digital",
+    "telephone": "",
+    "email": "manon.mignot@aelys.fr",
+    "quiFaitQuoi": [
+      "COUSSI IA — gestion de l'outil et de la base documentaire",
+      "Communication interne réseau",
+      "Outils digitaux et projets transverses"
+    ]
+  },
+  {
+    "service": "Direction & Coordination",
+    "nom": "Ludwig",
+    "poste": "Responsable Réseau",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Administration base documentaire COUSSI IA",
+      "Remontée des défauts de fabrication sur lignes de produits",
+      "Coordination réseau des 25 magasins"
+    ]
+  },
+  {
+    "service": "Direction & Coordination",
+    "nom": "Jean-François",
+    "poste": "Direction",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Escalade SAV très en retard (en copie des mails urgents)",
+      "Validation des défauts de fabrication récurrents",
+      "Décisions commerciales exceptionnelles"
+    ]
+  },
+  {
+    "service": "Direction & Coordination",
+    "nom": "Aurélie",
+    "poste": "Responsable Régionale Nouvelle-Aquitaine",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Formation et accompagnement des équipes terrain",
+      "Référente procédures internes",
+      "Remontées terrain et alimentation base documentaire"
+    ]
+  },
+  {
+    "service": "Direction & Coordination",
+    "nom": "Audrey",
+    "poste": "Responsable Régionale (à venir)",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Reprend le rôle d'Aurélie",
+      "Remonte les questions terrain sans réponse dans COUSSI IA",
+      "Interlocutrice principale pour les équipes magasins"
+    ]
+  },
+  {
+    "service": "Stock & Logistique",
+    "nom": "Stock Occitania",
+    "poste": "Centrale logistique — magasin 398",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Réception et traitement des défectueux centrale",
+      "Commandes EDI fournisseurs (produits griffés, montres, plaqué or)",
+      "HUB SAV — dispatch vers ateliers ou fournisseurs",
+      "Navette hebdomadaire (lundi et jeudi)"
+    ]
+  },
+  {
+    "service": "SAV & Ateliers",
+    "nom": "Atelier Calame — Bijouterie",
+    "poste": "Atelier 8116 — Pau",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Réparations bijoux (or, argent, acier, plaqué)",
+      "Mises à taille",
+      "Soudures, rhodiage, sertissage"
+    ]
+  },
+  {
+    "service": "SAV & Ateliers",
+    "nom": "Atelier Calame — Horlogerie",
+    "poste": "Atelier 8003 — Pau",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Réparations montres",
+      "Changements de piles",
+      "Bracelets et fermoirs montres"
+    ]
+  },
+  {
+    "service": "SAV & Ateliers",
+    "nom": "Nassima",
+    "poste": "HUB SAV Fournisseurs — CABI",
+    "telephone": "",
+    "email": "@officeCABI",
+    "quiFaitQuoi": [
+      "Gestion des SAV partis chez les fournisseurs",
+      "Lien entre les magasins et les fournisseurs pour les SAV",
+      "Suivi des retours fournisseurs"
+    ]
+  },
+  {
+    "service": "Fournisseurs",
+    "nom": "Christine",
+    "poste": "Fournisseur Fairbelle",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Disponibilités et commandes Fairbelle",
+      "Contacter par mail pour vérifier dispo avant commande",
+      "Mentionner l'urgence si délai contraint"
+    ]
+  },
+  {
+    "service": "Fournisseurs",
+    "nom": "Alias Concept / CABI OR",
+    "poste": "Fournisseur — codes C211 / 8888",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Fabrication sur commande (or 9k et 18k)",
+      "Délai jusqu'à 2 mois si fabrication nécessaire",
+      "Conversion 9k→18k : remplacer le '3' par '1' dans la réf fournisseur"
+    ]
+  },
+  {
+    "service": "Fournisseurs",
+    "nom": "Robbez Masson",
+    "poste": "Fournisseur Argent & Or",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Commandes argent et or via site en ligne",
+      "⚠️ Vider le panier après consultation si pas de commande",
+      "Modifier le menu déroulant en haut à droite pour sélectionner votre magasin"
+    ]
+  },
+  {
+    "service": "Fournisseurs",
+    "nom": "Lucas Lucor",
+    "poste": "Fournisseur Or",
+    "telephone": "",
+    "email": "",
+    "quiFaitQuoi": [
+      "Catalogues disponibles pour visuels (prix parfois obsolètes)",
+      "Saisir toutes les options sur le site : or creux/masse, 9k/18k, lettre soudée/gravée",
+      "Se référer au site fournisseur pour les prix à jour"
+    ]
+  }
+]

@@ -148,6 +148,129 @@
     .bubble.md hr { border:none; border-top:1px solid rgba(168,123,39,0.2); margin:8px 0; }
     .source-tag { display:inline-block; margin-top:10px; padding:3px 10px; background:rgba(168,123,39,0.1); border:1px solid rgba(168,123,39,0.25); border-radius:100px; font-size:0.72rem; color:var(--gold); font-weight:500; }
 
+    /* ── ANNUAIRE PANEL ─────────────────────────── */
+    .annuaire-overlay {
+      display:none; position:fixed; inset:0; background:rgba(17,32,51,0.45);
+      z-index:100; backdrop-filter:blur(3px); animation:fadeIn 0.2s ease;
+    }
+    .annuaire-overlay.open { display:block; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .annuaire-panel {
+      position:fixed; top:0; right:-440px; width:420px; max-width:100vw;
+      height:100dvh; background:var(--cream);
+      box-shadow:-8px 0 40px rgba(17,32,51,0.18);
+      display:flex; flex-direction:column; z-index:101;
+      transition:right 0.32s cubic-bezier(0.4,0,0.2,1);
+    }
+    .annuaire-panel.open { right:0; }
+
+    .ann-header {
+      padding:20px 22px 16px;
+      background:var(--navy);
+      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+    }
+    .ann-header-left { display:flex; align-items:center; gap:10px; }
+    .ann-title { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--gold); font-weight:600; letter-spacing:0.5px; }
+    .ann-sub { font-size:0.7rem; color:rgba(239,232,224,0.6); text-transform:uppercase; letter-spacing:0.8px; margin-top:2px; }
+    .ann-close {
+      width:32px; height:32px; border-radius:8px; border:none;
+      background:rgba(255,255,255,0.1); color:var(--sand); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+      transition:background 0.15s;
+    }
+    .ann-close:hover { background:rgba(255,255,255,0.2); }
+
+    .ann-search-wrap {
+      padding:14px 16px 10px; background:rgba(255,255,255,0.6);
+      border-bottom:1px solid var(--sand); flex-shrink:0;
+    }
+    .ann-search {
+      width:100%; padding:9px 14px; border:1.5px solid rgba(168,123,39,0.22);
+      border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.85rem;
+      background:white; outline:none; transition:border-color 0.2s;
+    }
+    .ann-search:focus { border-color:var(--gold); }
+
+    .ann-filters {
+      padding:10px 16px 0; display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0;
+      background:rgba(255,255,255,0.6); border-bottom:1px solid var(--sand); padding-bottom:10px;
+    }
+    .ann-filter {
+      padding:5px 12px; border-radius:100px; border:1.5px solid rgba(168,123,39,0.25);
+      font-size:0.75rem; font-weight:500; color:var(--text-muted); cursor:pointer;
+      background:white; transition:all 0.15s; white-space:nowrap;
+    }
+    .ann-filter:hover { border-color:var(--gold); color:var(--navy); }
+    .ann-filter.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+    .ann-body { flex:1; overflow-y:auto; padding:14px 16px 20px; }
+    .ann-body::-webkit-scrollbar { width:4px; }
+    .ann-body::-webkit-scrollbar-thumb { background:rgba(168,123,39,0.2); border-radius:10px; }
+
+    .ann-service-label {
+      font-size:0.68rem; font-weight:600; color:var(--gold); text-transform:uppercase;
+      letter-spacing:1px; margin:18px 0 8px; padding-left:2px;
+    }
+    .ann-service-label:first-child { margin-top:0; }
+
+    .ann-card {
+      background:white; border:1px solid rgba(168,123,39,0.12);
+      border-radius:14px; padding:14px 16px; margin-bottom:8px;
+      cursor:pointer; transition:all 0.18s; position:relative;
+    }
+    .ann-card:hover { border-color:var(--gold); box-shadow:0 4px 16px rgba(168,123,39,0.12); transform:translateY(-1px); }
+    .ann-card.expanded { border-color:var(--gold); background:rgba(168,123,39,0.03); }
+
+    .ann-card-top { display:flex; align-items:flex-start; gap:12px; }
+    .ann-avatar {
+      width:38px; height:38px; border-radius:10px; flex-shrink:0;
+      background:linear-gradient(135deg,var(--navy),#1e3a5f);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1rem; color:var(--gold); font-family:'Playfair Display',serif;
+      font-weight:600;
+    }
+    .ann-info { flex:1; min-width:0; }
+    .ann-nom { font-weight:600; font-size:0.9rem; color:var(--navy); line-height:1.2; }
+    .ann-poste { font-size:0.76rem; color:var(--text-muted); margin-top:2px; line-height:1.3; }
+
+    .ann-card-actions {
+      display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;
+    }
+    .ann-action {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:5px 10px; border-radius:8px; font-size:0.75rem; font-weight:500;
+      text-decoration:none; border:1px solid rgba(168,123,39,0.2);
+      color:var(--navy); background:rgba(168,123,39,0.06); transition:all 0.15s;
+    }
+    .ann-action:hover { background:var(--gold); color:white; border-color:var(--gold); }
+
+    .ann-qfq {
+      display:none; margin-top:12px; padding-top:12px;
+      border-top:1px solid rgba(168,123,39,0.12);
+    }
+    .ann-card.expanded .ann-qfq { display:block; }
+    .ann-qfq-title { font-size:0.7rem; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:7px; }
+    .ann-qfq ul { list-style:none; padding:0; margin:0; }
+    .ann-qfq li { font-size:0.82rem; color:var(--text); line-height:1.5; padding:3px 0 3px 14px; position:relative; }
+    .ann-qfq li::before { content:'→'; position:absolute; left:0; color:var(--gold); font-size:0.7rem; top:4px; }
+
+    .ann-chevron { font-size:0.7rem; color:var(--text-muted); transition:transform 0.2s; margin-top:2px; }
+    .ann-card.expanded .ann-chevron { transform:rotate(180deg); }
+
+    .ann-empty { text-align:center; color:var(--text-muted); font-size:0.85rem; padding:40px 0; }
+
+    /* Bouton annuaire dans le header */
+    .ann-btn {
+      display:flex; align-items:center; gap:6px;
+      padding:7px 13px; border-radius:100px; border:none; cursor:pointer;
+      background:rgba(168,123,39,0.1); border:1px solid rgba(168,123,39,0.22);
+      font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500;
+      color:var(--gold); transition:all 0.2s;
+    }
+    .ann-btn:hover { background:var(--navy); color:var(--gold); border-color:var(--navy); }
+    /* ─────────────────────────────────────────── */
+
     @media (max-width:600px) {
       .app { height:100dvh;max-height:100dvh;border-radius:0; }
       .bubble { max-width:82%; }
@@ -155,6 +278,7 @@
       .header { padding:16px 18px; }
       .chat { padding:16px; }
       .input-bar { padding:12px 14px; }
+      .annuaire-panel { width:100vw; }
     }
   </style>
 </head>
@@ -174,11 +298,35 @@
       <div class="header-title">COUSSI IA</div>
       <div class="header-sub">Assistant Aélys Nouvelle-Aquitaine</div>
     </div>
+    <button class="ann-btn" onclick="toggleAnnuaire()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Annuaire
+    </button>
     <div class="status-pill">
       <div class="status-dot"></div>
       En ligne
     </div>
   </div>
+
+  <!-- ── ANNUAIRE PANEL ── -->
+  <div class="annuaire-overlay" id="annOverlay" onclick="closeAnnuaire()"></div>
+  <div class="annuaire-panel" id="annPanel">
+    <div class="ann-header">
+      <div class="ann-header-left">
+        <div>
+          <div class="ann-title">📒 Annuaire</div>
+          <div class="ann-sub">Contacts & interlocuteurs</div>
+        </div>
+      </div>
+      <button class="ann-close" onclick="closeAnnuaire()">✕</button>
+    </div>
+    <div class="ann-search-wrap">
+      <input class="ann-search" id="annSearch" placeholder="Rechercher un nom, un service…" oninput="renderAnnuaire()" autocomplete="off" />
+    </div>
+    <div class="ann-filters" id="annFilters"></div>
+    <div class="ann-body" id="annBody"></div>
+  </div>
+  <!-- ───────────────────── -->
 
   <div class="chat" id="chat">
     <div class="welcome" id="welcome">
@@ -347,6 +495,110 @@ function showError(msg) {
 }
 
 function scrollDown() { chatEl.scrollTop = chatEl.scrollHeight; }
+
+// ── ANNUAIRE ────────────────────────────────────────────────
+let CONTACTS = [];
+let activeFilter = 'Tous';
+
+async function loadContacts() {
+  try {
+    const res = await fetch('/contacts.json');
+    CONTACTS = await res.json();
+    buildFilters();
+    renderAnnuaire();
+  } catch(e) {
+    document.getElementById('annBody').innerHTML = '<div class="ann-empty">Impossible de charger l\'annuaire.</div>';
+  }
+}
+loadContacts();
+
+function buildFilters() {
+  const services = ['Tous', ...new Set(CONTACTS.map(c => c.service))];
+  const wrap = document.getElementById('annFilters');
+  wrap.innerHTML = services.map(s =>
+    `<button class="ann-filter ${s === activeFilter ? 'active' : ''}" onclick="setFilter('${s}')">${s}</button>`
+  ).join('');
+}
+
+function setFilter(service) {
+  activeFilter = service;
+  buildFilters();
+  renderAnnuaire();
+}
+
+function getInitials(nom) {
+  return nom.split(' ').filter(w => w.length > 0).slice(0,2).map(w => w[0].toUpperCase()).join('');
+}
+
+function renderAnnuaire() {
+  const q = (document.getElementById('annSearch')?.value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  let filtered = CONTACTS;
+  if (activeFilter !== 'Tous') filtered = filtered.filter(c => c.service === activeFilter);
+  if (q) filtered = filtered.filter(c =>
+    (c.nom + ' ' + c.poste + ' ' + c.service + ' ' + (c.quiFaitQuoi||[]).join(' '))
+      .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').includes(q)
+  );
+
+  if (!filtered.length) {
+    document.getElementById('annBody').innerHTML = '<div class="ann-empty">Aucun contact trouvé.</div>';
+    return;
+  }
+
+  // Grouper par service
+  const byService = {};
+  filtered.forEach(c => {
+    if (!byService[c.service]) byService[c.service] = [];
+    byService[c.service].push(c);
+  });
+
+  let html = '';
+  for (const [service, contacts] of Object.entries(byService)) {
+    html += `<div class="ann-service-label">${service}</div>`;
+    contacts.forEach((c, i) => {
+      const id = `card-${service.replace(/\s/g,'-')}-${i}`;
+      const hasActions = c.telephone || c.email;
+      const qfqItems = (c.quiFaitQuoi || []).map(q => `<li>${q}</li>`).join('');
+      html += `
+        <div class="ann-card" id="${id}" onclick="toggleCard('${id}')">
+          <div class="ann-card-top">
+            <div class="ann-avatar">${getInitials(c.nom)}</div>
+            <div class="ann-info">
+              <div class="ann-nom">${c.nom}</div>
+              <div class="ann-poste">${c.poste}</div>
+            </div>
+            <div class="ann-chevron">▼</div>
+          </div>
+          ${hasActions ? `<div class="ann-card-actions">
+            ${c.telephone ? `<a class="ann-action" href="tel:${c.telephone}">📞 ${c.telephone}</a>` : ''}
+            ${c.email ? `<a class="ann-action" href="mailto:${c.email}">✉️ ${c.email}</a>` : ''}
+          </div>` : ''}
+          ${qfqItems ? `<div class="ann-qfq">
+            <div class="ann-qfq-title">Qui fait quoi</div>
+            <ul>${qfqItems}</ul>
+          </div>` : ''}
+        </div>`;
+    });
+  }
+  document.getElementById('annBody').innerHTML = html;
+}
+
+function toggleCard(id) {
+  document.getElementById(id)?.classList.toggle('expanded');
+}
+
+function toggleAnnuaire() {
+  document.getElementById('annPanel').classList.toggle('open');
+  document.getElementById('annOverlay').classList.toggle('open');
+  if (document.getElementById('annPanel').classList.contains('open')) {
+    setTimeout(() => document.getElementById('annSearch')?.focus(), 350);
+  }
+}
+function closeAnnuaire() {
+  document.getElementById('annPanel').classList.remove('open');
+  document.getElementById('annOverlay').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAnnuaire(); });
+// ────────────────────────────────────────────────────────────
 </script>
 </body>
 </html>
