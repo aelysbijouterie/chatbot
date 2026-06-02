@@ -3,6 +3,9 @@
   functions = "netlify/functions"
   publish = "."
 
+[functions]
+  included_files = ["netlify/functions/kb.json"]
+
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"

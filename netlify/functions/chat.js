@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -12,8 +9,7 @@ exports.handler = async function(event) {
     const apiKey = process.env.GROQ_API_KEY;
 
     // Load knowledge base bundled at build time
-    const kbPath = path.join(__dirname, 'kb.json');
-    const docs = JSON.parse(fs.readFileSync(kbPath, 'utf8'));
+    const docs = require('./kb.json');
 
     // Build context with source citation markers
     const context = docs
