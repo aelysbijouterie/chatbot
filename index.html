@@ -88,7 +88,7 @@
     .welcome-icon { font-size:2.2rem;margin-bottom:12px;display:block; }
     .welcome h2 { font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--navy);font-weight:600;margin-bottom:8px; }
     .welcome p { color:var(--text-muted);font-size:0.88rem;line-height:1.6;max-width:400px;margin:0 auto 28px; }
-    .quick-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:520px;margin:0 auto; }
+    .quick-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:680px;margin:0 auto; }
     .quick-btn {
       padding:14px 16px;
       background:rgba(255,255,255,0.8);
@@ -151,7 +151,7 @@
     @media (max-width:600px) {
       .app { height:100dvh;max-height:100dvh;border-radius:0; }
       .bubble { max-width:82%; }
-      .quick-grid { grid-template-columns:1fr; }
+      .quick-grid { grid-template-columns:repeat(2,1fr); }
       .header { padding:16px 18px; }
       .chat { padding:16px; }
       .input-bar { padding:12px 14px; }
@@ -188,19 +188,27 @@
       <div class="quick-grid">
         <button class="quick-btn" onclick="ask('Procédure commandes or sans remise')">
           <div class="btn-icon">🛒</div>
-          <div class="btn-label">Commandes<small>Or, argent, griffé…</small></div>
+          <div class="btn-label">Commandes<small>Or, argent, griffé, remisé…</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Procédure défectueux')">
+        <button class="quick-btn" onclick="ask('Procédure défectueux — comment détecter fabrication ou utilisation')">
+          <div class="btn-icon">🔍</div>
+          <div class="btn-label">Défectueux<small>Procédures & détection</small></div>
+        </button>
+        <button class="quick-btn" onclick="ask('Procédure SAV créer une fiche, aide décisionnelle garantie')">
           <div class="btn-icon">🔧</div>
-          <div class="btn-label">Défectueux<small>Fiches & procédures</small></div>
+          <div class="btn-label">SAV & garanties<small>Réparations, litiges, décisions</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Procédure SAV créer une fiche')">
-          <div class="btn-icon">🔩</div>
-          <div class="btn-label">SAV<small>Réparations & litiges</small></div>
+        <button class="quick-btn" onclick="ask('Techniques de vente, objectifs PM PVM IV, SONCAS')">
+          <div class="btn-icon">💬</div>
+          <div class="btn-label">Techniques de vente<small>6 temps, SONCAS, objectifs</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Objectifs de vente et techniques')">
-          <div class="btn-icon">📋</div>
-          <div class="btn-label">Techniques de vente<small>Objectifs & méthodes</small></div>
+        <button class="quick-btn" onclick="ask('Références ODEIS, code famille, moyens de règlement')">
+          <div class="btn-icon">💻</div>
+          <div class="btn-label">ODEIS & références<small>Logiciel, codes, règlement</small></div>
+        </button>
+        <button class="quick-btn" onclick="ask('Programme formation nouvel entrant semaines')">
+          <div class="btn-icon">📚</div>
+          <div class="btn-label">Formation<small>Programme nouvel entrant</small></div>
         </button>
       </div>
     </div>
