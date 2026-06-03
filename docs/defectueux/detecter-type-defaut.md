@@ -18,14 +18,14 @@ Cette distinction est **cruciale** : elle conditionne si le SAV est gratuit ou p
 |---|---|---|
 | OZ manquant, griffes toutes en place et intactes | **Défaut de fabrication** | Les griffes retiennent l'OZ → s'il tombe c'est qu'elles ne l'ont jamais bien tenu |
 | OZ manquant, une griffe sectionnée nette | **Défaut de fabrication** | Griffe sectionnée nette = rupture métallurgique, pas une usure progressive |
-| OZ manquant, une griffe tirée vers l'extérieur | **Défaut d'utilisation** | La griffe a été accrochée/tirée mécaniquement |
+| OZ manquant, une griffe tirée/arrachée vers l'extérieur | **Défaut d'utilisation** | Une griffe arrachée ou déformée est quasi-systématiquement due à une mauvaise utilisation (accroché dans un tissu, choc, port abusif) — facturer au client |
 | OZ manquant, griffes usées ou écartées progressivement | **Défaut d'utilisation** | Usure normale ou chocs répétés |
 | Corps de bague sectionné | **Défaut d'utilisation** | Un corps de bague ne se sectionne pas spontanément |
 
 ### Règle pour les griffes
-- Griffe **sectionnée nette** = défaut fabrication (cassure franche, pas de déformation)
-- Griffe **tirée / évasée / tordue** = défaut utilisation (contrainte mécanique externe)
-- Griffe **usée progressivement** = défaut utilisation (frottement normal)
+- Griffe **sectionnée nette** = défaut fabrication (cassure franche, pas de déformation préalable)
+- Griffe **tirée / arrachée / évasée / tordue** = **défaut d'utilisation** → facturer client (une griffe ne s'arrache pas seule, c'est toujours une contrainte externe : accroché dans un tissu, choc, port abusif)
+- Griffe **usée progressivement** = défaut utilisation (frottement normal sur la durée)
 
 ---
 

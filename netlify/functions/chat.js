@@ -40,9 +40,10 @@ exports.handler = async function(event) {
       .map(doc => ({ doc, s: score(userQuestion, doc) }))
       .sort((a, b) => b.s - a.s);
 
+    // Max 3 docs + troncature à 3000 caractères chacun pour rester sous 12 000 TPM
     const topDocs = scored[0].s > 0
-      ? scored.slice(0, 4).filter(x => x.s > 0).map(x => x.doc)
-      : docs;
+      ? scored.slice(0, 3).filter(x => x.s > 0).map(x => x.doc)
+      : docs.slice(0, 3);
 
     // Suggestions = les docs pertinents non utilisés en premier (pour "Voir aussi")
     const suggestions = scored
@@ -50,8 +51,14 @@ exports.handler = async function(event) {
       .slice(0, 6)
       .map(x => x.doc.title);
 
+    // Tronquer chaque doc à 3 000 caractères max pour éviter les dépassements TPM
     const context = topDocs
-      .map(doc => `## [SOURCE: ${doc.title}]\n${doc.content}`)
+      .map(doc => {
+        const content = doc.content.length > 3000
+          ? doc.content.slice(0, 3000) + '\n[...suite disponible — reformulez si besoin]'
+          : doc.content;
+        return `## [SOURCE: ${doc.title}]\n${content}`;
+      })
       .join('\n\n---\n\n');
     // ─────────────────────────────────────────────────────────────────
 
@@ -69,7 +76,8 @@ BASE DE CONNAISSANCE :
 ${context}`;
 
     // ── Construction des messages avec mémoire (max 6 échanges) ──────
-    const historyMessages = messages.slice(-6).map(m => ({
+    // Historique limité aux 2 derniers messages (1 échange) pour économiser les tokens
+    const historyMessages = messages.slice(-2).map(m => ({
       role: m.role,
       content: m.content
     }));
@@ -83,7 +91,7 @@ ${context}`;
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 800,
+        max_tokens: 500,
         messages: [
           { role: 'system', content: systemPrompt },
           ...historyMessages
