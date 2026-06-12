@@ -49,6 +49,13 @@ module.exports = async function(req, res) {
       .slice(0, 6)
       .map(x => x.doc.title);
 
+    const GITHUB_BASE = 'https://github.com/aelysbijouterie/chatbot/blob/main/docs';
+
+    // Vérifie si un doc contient des images
+    function hasImages(doc) {
+      return /!\[.*?\]\(.*?\)/.test(doc.content);
+    }
+
     const context = topDocs
       .map(doc => {
         // Supprimer les lignes d'images markdown (inutiles pour le LLM, consomment des tokens)
@@ -107,7 +114,15 @@ ${context}`;
       return res.status(200).json({ hors_base: true });
     }
 
-    return res.status(200).json({ text, suggestions });
+    // Ajouter un lien vers la procédure complète si le doc principal contient des images
+    let finalText = text;
+    if (topDocs.length > 0 && hasImages(topDocs[0])) {
+      const docPath = topDocs[0].id.replace(/\\/g, '/');
+      const githubUrl = `${GITHUB_BASE}/${docPath}`;
+      finalText += `\n\n📎 [Voir la procédure complète avec photos](${githubUrl})`;
+    }
+
+    return res.status(200).json({ text: finalText, suggestions });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
