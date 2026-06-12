@@ -56,11 +56,31 @@ module.exports = async function(req, res) {
       .slice(0, 6)
       .map(x => x.doc.title);
 
-    const GITHUB_BASE = 'https://github.com/aelysbijouterie/chatbot/blob/main/docs';
+    const GITHUB_PDF_BASE = 'https://github.com/aelysbijouterie/chatbot/blob/main/procedures-pdf';
+
+    // Mapping doc id → nom du PDF
+    const PDF_MAP = {
+      'commandes-web/fonctionnement-general-commandes-web.md': 'fonctionnement-general-commandes-web.pdf',
+      'commandes-web/gestion-commande-livraison.md':           'gestion-commande-livraison.pdf',
+      'commandes-web/gestion-e-reservation.md':               'gestion-e-reservation.pdf',
+      'commandes-web/gestion-click-and-collect.md':           'gestion-click-and-collect.pdf',
+      'commandes-web/constitution-lettre-suivie.md':          'constitution-lettre-suivie.pdf',
+      'commandes-web/constitution-colis.md':                  'constitution-colis.pdf',
+      'commandes-web/collecte-colissimo.md':                  'collecte-colissimo.pdf',
+      'commandes-web/collecte-chronopost.md':                 'collecte-chronopost.pdf',
+      'commandes-web/retours-sav-web.md':                     'retours-sav-web.pdf',
+      'commandes-web/stocks-fournitures-web.md':              'stocks-fournitures-web.pdf',
+    };
 
     // Vérifie si un doc contient des images
     function hasImages(doc) {
       return /!\[.*?\]\(.*?\)/.test(doc.content);
+    }
+
+    function getPdfUrl(doc) {
+      const pdf = PDF_MAP[doc.id.replace(/\\/g, '/')];
+      if (pdf) return `${GITHUB_PDF_BASE}/${pdf}`;
+      return null;
     }
 
     const context = topDocs
@@ -120,12 +140,13 @@ ${context}`;
       return res.status(200).json({ hors_base: true });
     }
 
-    // Ajouter un lien vers la procédure complète si le doc principal contient des images
+    // Ajouter un lien PDF si disponible, sinon rien
     let finalText = text;
     if (topDocs.length > 0 && hasImages(topDocs[0])) {
-      const docPath = topDocs[0].id.replace(/\\/g, '/');
-      const githubUrl = `${GITHUB_BASE}/${docPath}`;
-      finalText += `\n\n📎 [Voir la procédure complète avec photos](${githubUrl})`;
+      const pdfUrl = getPdfUrl(topDocs[0]);
+      if (pdfUrl) {
+        finalText += `\n\n📄 [Voir la procédure complète (PDF)](${pdfUrl})`;
+      }
     }
 
     return res.status(200).json({ text: finalText, suggestions });
