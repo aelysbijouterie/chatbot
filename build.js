@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DOCS_DIR = path.join(__dirname, 'docs');
-const OUT_FILE = path.join(__dirname, 'netlify', 'functions', 'kb.json');
+const OUT_FILE = path.join(__dirname, 'api', 'kb.json');
 
 function readDocsRecursive(dir, base = '') {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
