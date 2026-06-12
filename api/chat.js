@@ -40,9 +40,16 @@ module.exports = async function(req, res) {
       .map(doc => ({ doc, s: score(userQuestion, doc) }))
       .sort((a, b) => b.s - a.s);
 
-    const topDocs = scored[0].s > 0
-      ? scored.slice(0, 3).filter(x => x.s > 0).map(x => x.doc)
-      : docs.slice(0, 3);
+    // Si le premier doc domine clairement (score >= 8 et 2x le suivant), n'envoyer que lui
+    // Sinon envoyer les 2 premiers — jamais 3 pour éviter les mélanges de contexte
+    let topDocs;
+    if (scored[0].s <= 0) {
+      topDocs = docs.slice(0, 2);
+    } else if (scored[0].s >= 8 && scored[0].s >= scored[1].s * 1.8) {
+      topDocs = [scored[0].doc];
+    } else {
+      topDocs = scored.slice(0, 2).filter(x => x.s > 0).map(x => x.doc);
+    }
 
     const suggestions = scored
       .filter(x => x.s > 0)
@@ -74,11 +81,12 @@ module.exports = async function(req, res) {
 
 Tu dois UNIQUEMENT répondre à partir de la base de connaissance fournie ci-dessous.
 
-RÈGLES ABSOLUES :
-1. Si la réponse est présente dans la base → réponds de façon claire et structurée en Markdown (##, listes -, **gras**), en français. Termine TOUJOURS ta réponse par une ligne : 📄 *Source : [nom exact du document entre crochets SOURCE]*
-2. Si la réponse N'EST PAS dans la base → réponds UNIQUEMENT avec ce JSON exact sur une seule ligne, sans rien d'autre : {"hors_base":true}
-
-N'improvise jamais. N'invente aucune procédure. Ne complète pas avec tes connaissances générales.
+RÈGLES ABSOLUES — AUCUNE EXCEPTION :
+1. Tu n'utilises QUE le texte exact fourni dans la BASE DE CONNAISSANCE ci-dessous. Rien d'autre.
+2. Tu n'ajoutes AUCUNE information qui ne figure pas mot pour mot dans ce texte. Pas d'exemple, pas de complément, pas de connaissance générale sur la bijouterie ou les procédures.
+3. Si la réponse est présente dans la base → réponds de façon claire et structurée en Markdown (##, listes -, **gras**), en français. Termine TOUJOURS ta réponse par : 📄 *Source : [nom exact du document entre crochets SOURCE]*
+4. Si la réponse N'EST PAS dans la base → réponds UNIQUEMENT avec ce JSON exact, rien d'autre : {"hors_base":true}
+5. Si tu as un doute, réponds {"hors_base":true} plutôt que d'inventer.
 
 BASE DE CONNAISSANCE :
 ${context}`;
