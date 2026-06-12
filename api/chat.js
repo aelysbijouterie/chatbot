@@ -84,6 +84,11 @@ module.exports = async function(req, res) {
       return null;
     }
 
+    // Aucun doc pertinent → hors_base immédiat, sans appeler le LLM
+    if (topDocs.length === 0) {
+      return res.status(200).json({ hors_base: true });
+    }
+
     const context = topDocs
       .map(doc => {
         // Supprimer les lignes d'images markdown (inutiles pour le LLM, consomment des tokens)
