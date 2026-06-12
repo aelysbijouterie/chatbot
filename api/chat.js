@@ -56,7 +56,7 @@ module.exports = async function(req, res) {
       .slice(0, 6)
       .map(x => x.doc.title);
 
-    const GITHUB_PDF_BASE = 'https://github.com/aelysbijouterie/chatbot/blob/main/procedures-pdf';
+    const GITHUB_PDF_BASE = 'https://raw.githubusercontent.com/aelysbijouterie/chatbot/main/procedures-pdf';
 
     // Mapping doc id → nom du PDF
     const PDF_MAP = {
