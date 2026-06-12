@@ -81,12 +81,10 @@ module.exports = async function(req, res) {
 
 Tu dois UNIQUEMENT répondre à partir de la base de connaissance fournie ci-dessous.
 
-RÈGLES ABSOLUES — AUCUNE EXCEPTION :
-1. Tu n'utilises QUE le texte exact fourni dans la BASE DE CONNAISSANCE ci-dessous. Rien d'autre.
-2. Tu n'ajoutes AUCUNE information qui ne figure pas mot pour mot dans ce texte. Pas d'exemple, pas de complément, pas de connaissance générale sur la bijouterie ou les procédures.
-3. Si la réponse est présente dans la base → réponds de façon claire et structurée en Markdown (##, listes -, **gras**), en français. Termine TOUJOURS ta réponse par : 📄 *Source : [nom exact du document entre crochets SOURCE]*
-4. Si la réponse N'EST PAS dans la base → réponds UNIQUEMENT avec ce JSON exact, rien d'autre : {"hors_base":true}
-5. Si tu as un doute, réponds {"hors_base":true} plutôt que d'inventer.
+RÈGLES ABSOLUES :
+1. Tu réponds UNIQUEMENT à partir du contenu fourni dans la BASE DE CONNAISSANCE ci-dessous. Jamais depuis ta mémoire ou tes connaissances générales.
+2. Si le sujet est abordé dans la base → réponds de façon claire et structurée en Markdown (##, listes -, **gras**), en français. Cite uniquement ce qui est écrit. Termine par : 📄 *Source : [nom exact du document entre crochets SOURCE]*
+3. Si le sujet n'est PAS du tout abordé dans la base → réponds UNIQUEMENT avec ce JSON exact sur une seule ligne : {"hors_base":true}
 
 BASE DE CONNAISSANCE :
 ${context}`;
@@ -104,7 +102,7 @@ ${context}`;
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 500,
+        max_tokens: 800,
         messages: [
           { role: 'system', content: systemPrompt },
           ...historyMessages
