@@ -51,9 +51,14 @@ module.exports = async function(req, res) {
 
     const context = topDocs
       .map(doc => {
-        const content = doc.content.length > 3000
-          ? doc.content.slice(0, 3000) + '\n[...suite disponible — reformulez si besoin]'
-          : doc.content;
+        // Supprimer les lignes d'images markdown (inutiles pour le LLM, consomment des tokens)
+        const stripped = doc.content
+          .replace(/!\[.*?\]\(.*?\)\n?/g, '')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        const content = stripped.length > 3000
+          ? stripped.slice(0, 3000) + '\n[...suite disponible — reformulez si besoin]'
+          : stripped;
         return `## [SOURCE: ${doc.title}]\n${content}`;
       })
       .join('\n\n---\n\n');
