@@ -40,15 +40,16 @@ module.exports = async function(req, res) {
       .map(doc => ({ doc, s: score(userQuestion, doc) }))
       .sort((a, b) => b.s - a.s);
 
-    // Si le premier doc domine clairement (score >= 8 et 2x le suivant), n'envoyer que lui
-    // Sinon envoyer les 2 premiers — jamais 3 pour éviter les mélanges de contexte
+    // Score minimum : 3 hits requis pour envoyer un doc
+    // Si le premier doc domine clairement (score >= 8 et 1.8x le suivant), n'envoyer que lui
+    const MIN_SCORE = 3;
     let topDocs;
-    if (scored[0].s <= 0) {
-      topDocs = docs.slice(0, 2);
+    if (scored[0].s < MIN_SCORE) {
+      topDocs = []; // aucun doc pertinent → hors_base garanti
     } else if (scored[0].s >= 8 && scored[0].s >= scored[1].s * 1.8) {
       topDocs = [scored[0].doc];
     } else {
-      topDocs = scored.slice(0, 2).filter(x => x.s > 0).map(x => x.doc);
+      topDocs = scored.slice(0, 2).filter(x => x.s >= MIN_SCORE).map(x => x.doc);
     }
 
     const suggestions = scored
@@ -103,8 +104,9 @@ Tu dois UNIQUEMENT répondre à partir de la base de connaissance fournie ci-des
 
 RÈGLES ABSOLUES :
 1. Tu réponds UNIQUEMENT à partir du contenu fourni dans la BASE DE CONNAISSANCE ci-dessous. Jamais depuis ta mémoire ou tes connaissances générales.
-2. Si le sujet est abordé dans la base → réponds de façon claire et structurée en Markdown (##, listes -, **gras**), en français. Cite uniquement ce qui est écrit. Termine par : 📄 *Source : [nom exact du document entre crochets SOURCE]*
-3. Si le sujet n'est PAS du tout abordé dans la base → réponds UNIQUEMENT avec ce JSON exact sur une seule ligne : {"hors_base":true}
+2. Avant de répondre, vérifie que la BASE DE CONNAISSANCE répond DIRECTEMENT à la question posée. Si le document trouvé traite d'un autre sujet et que le mot-clé n'apparaît que de façon accessoire → {"hors_base":true}.
+3. Si le sujet est bien abordé dans la base → réponds de façon claire et structurée en Markdown (##, listes -, **gras**), en français. Cite uniquement ce qui est écrit. Termine par : 📄 *Source : [nom exact du document entre crochets SOURCE]*
+4. Si le sujet n'est PAS du tout abordé dans la base → réponds UNIQUEMENT avec ce JSON exact sur une seule ligne : {"hors_base":true}
 
 BASE DE CONNAISSANCE :
 ${context}`;
