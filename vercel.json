@@ -7,3 +7,10 @@
     }
   }
 }
+{
+  "functions": {
+    "api/chat.js": {
+      "includeFiles": "docs/**"
+    }
+  }
+}
