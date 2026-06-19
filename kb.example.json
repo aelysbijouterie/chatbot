@@ -1,0 +1,42 @@
+[
+  {
+    "id": "sav-creation-fiche",
+    "titre": "Création d'une fiche SAV",
+    "categorie": "SAV",
+    "motsClefs": ["sav", "fiche", "garantie", "réparation", "création", "litige"],
+    "contenu": "Pour créer une fiche SAV dans ODEIS :\n1. Ouvrir le module SAV depuis le menu principal\n2. Renseigner le client et l'article concerné\n3. Décrire précisément le défaut constaté\n4. Sélectionner le type de garantie applicable\n5. Imprimer le bon de dépôt et le faire signer au client\n6. Joindre une photo de l'article si le défaut est visible\n\nEn cas de doute sur l'éligibilité à la garantie, se référer à l'aide décisionnelle garantie disponible dans le même module.",
+    "type": "procedure",
+    "pdfUrl": "https://raw.githubusercontent.com/aelysbijouterie/chatbot/main/docs/sav/creation-fiche-sav.pdf",
+    "dateMAJ": "2026-05-12"
+  },
+  {
+    "id": "commandes-web-fonctionnement",
+    "titre": "Fonctionnement général des commandes web",
+    "categorie": "Commandes web",
+    "motsClefs": ["commande", "web", "site", "internet", "e-commerce"],
+    "contenu": "Les commandes passées sur le site web Aélys arrivent automatiquement dans ODEIS sous 24h. Chaque commande génère un numéro de suivi unique...",
+    "type": "procedure",
+    "pdfUrl": "https://raw.githubusercontent.com/aelysbijouterie/chatbot/main/docs/commandes-web/fonctionnement-general.pdf",
+    "dateMAJ": "2026-04-02"
+  },
+  {
+    "id": "vente-techniques-6-temps",
+    "titre": "Techniques de vente — les 6 temps",
+    "categorie": "Vente",
+    "motsClefs": ["vente", "soncas", "6 temps", "objectifs", "pm", "pvm", "iv"],
+    "contenu": "Les 6 temps de la vente : 1) Accueil 2) Découverte des besoins (méthode SONCAS) 3) Argumentation 4) Traitement des objections 5) Conclusion 6) Prise de congé...",
+    "type": "info",
+    "pdfUrl": null,
+    "dateMAJ": "2026-01-20"
+  },
+  {
+    "id": "odeis-codes-famille",
+    "titre": "Référence des codes famille ODEIS",
+    "categorie": "ODEIS",
+    "motsClefs": ["odeis", "code famille", "référence", "logiciel"],
+    "contenu": "Liste des codes famille utilisés dans ODEIS : OR = bijouterie or, ARG = argenterie, MON = horlogerie, GRI = griffé...",
+    "type": "reference",
+    "pdfUrl": "https://raw.githubusercontent.com/aelysbijouterie/chatbot/main/docs/odeis/codes-famille.pdf",
+    "dateMAJ": "2026-03-15"
+  }
+]
