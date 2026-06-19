@@ -3,14 +3,7 @@
   "outputDirectory": ".",
   "functions": {
     "api/chat.js": {
-      "includeFiles": "api/kb.json"
-    }
-  }
-}
-{
-  "functions": {
-    "api/chat.js": {
-      "includeFiles": "docs/**"
+      "includeFiles": ["api/kb.json", "api/docs/**"]
     }
   }
 }
