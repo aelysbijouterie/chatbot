@@ -2,7 +2,7 @@
 
 ## Comment ça marche
 La base de connaissance est constituée de fichiers texte (.md) stockés dans le dossier `docs/`.
-Chaque fichier = un sujet. Quand vous modifiez ou ajoutez un fichier sur GitHub, le chatbot est mis à jour automatiquement en moins d'une minute.
+Chaque fichier = un sujet. Quand vous modifiez ou ajoutez un fichier sur GitHub, le chatbot est mis à jour automatiquement en moins d'une minute. 
 
 ---
 
