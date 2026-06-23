@@ -1,9 +1,0 @@
-{
-  "buildCommand": "node build.js",
-  "outputDirectory": ".",
-  "functions": {
-    "api/chat.js": {
-      "includeFiles": "api/kb.json"
-    }
-  }
-}
