@@ -72,11 +72,11 @@ module.exports = async function(req, res) {
       .sort((a, b) => b.s - a.s);
 
     // Score minimum requis pour considérer un doc comme pertinent
-    const MIN_SCORE = 4;
+    const MIN_SCORE = 2;
     let topDocs;
     if (!scored.length || scored[0].s < MIN_SCORE) {
       topDocs = [];
-    } else if (scored[0].s >= 10 && scored[0].s >= (scored[1]?.s || 0) * 1.8) {
+    } else if (scored[0].s >= 6 && scored[0].s >= (scored[1]?.s || 0) * 1.5) {
       topDocs = [scored[0].doc];
     } else {
       topDocs = scored.slice(0, 2).filter(x => x.s >= MIN_SCORE).map(x => x.doc);
@@ -99,8 +99,8 @@ module.exports = async function(req, res) {
           .replace(/!\[.*?\]\(.*?\)\n?/g, '')
           .replace(/\n{3,}/g, '\n\n')
           .trim();
-        const content = stripped.length > 3000
-          ? stripped.slice(0, 3000) + '\n[...suite disponible — reformulez si besoin]'
+        const content = stripped.length > 1500
+          ? stripped.slice(0, 1500)
           : stripped;
         return `## [SOURCE: ${doc.titre}]\n${content}`;
       })
@@ -111,26 +111,17 @@ module.exports = async function(req, res) {
 Tu réponds UNIQUEMENT à partir de la BASE DE CONNAISSANCE fournie. Jamais depuis ta mémoire générale.
 
 RÈGLES ABSOLUES :
-1. Si le sujet n'est PAS abordé dans la base → réponds uniquement : {"hors_base":true}
-2. Si le sujet EST abordé → applique le FORMAT ci-dessous selon le type de question.
-3. N'invente JAMAIS une info, un prix, un délai ou une référence absente de la base.
-4. Ignore les artefacts de mise en page (numéros de page, titres de navigation, entêtes Word).
+1. Si le sujet n'est PAS dans la base → réponds uniquement : {"hors_base":true}
+2. N'invente jamais une info absente de la base.
+3. Ignore les artefacts PDF : numéros de page, entêtes répétés, caractères parasites.
 
-FORMAT DE RÉPONSE selon le type de question :
+FORMAT DE RÉPONSE (toujours ce format, sans exception) :
+→ 2 à 3 phrases maximum résumant l'objet de la procédure et à qui / quand elle s'applique.
+→ PAS d'étapes détaillées, PAS de liste à puces, PAS de numérotation.
+→ Terminer par : "Consulte la procédure complète via le lien ci-dessous."
 
-▸ PROCÉDURE (comment faire X, étapes de X, procédure de X) :
-→ 1 phrase d'intro maximum
-→ étapes clés numérotées, 3 à 6 maximum — synthétiser, ne pas tout recopier
-→ 1 point d'attention si critique (⚠️)
-→ termine par : 📄 *Source : [titre exact du document]*
-
-▸ RÈGLE / POLITIQUE (que faire si, est-ce que je peux, quand) :
-→ réponse directe en 2-3 lignes max
-→ termine par : 📄 *Source : [titre exact du document]*
-
-▸ CHIFFRE / CONTACT / DÉLAI :
-→ réponse en 1 ligne
-→ termine par : 📄 *Source : [titre exact du document]*
+Exemple de bonne réponse :
+"Cette procédure explique comment traiter une commande web en livraison à domicile depuis ODEIS. Elle couvre la validation de commande, l'impression du bon de préparation et l'expédition Colissimo ou Chronopost. Consulte la procédure complète via le lien ci-dessous."
 
 BASE DE CONNAISSANCE :
 ${context}`;
@@ -148,7 +139,7 @@ ${context}`;
       },
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
-        max_tokens: 800,
+        max_tokens: 250,
         messages: [
           { role: 'system', content: systemPrompt },
           ...historyMessages
