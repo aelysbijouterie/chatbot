@@ -1,159 +1,172 @@
 [
   {
-    "service": "Direction & Coordination",
-    "nom": "Manon Mignot",
-    "poste": "Responsable Marketing & Digital",
-    "telephone": "",
-    "email": "manon.mignot@aelys.fr",
-    "quiFaitQuoi": [
-      "COUSSI IA — gestion de l'outil et de la base documentaire",
-      "Communication interne réseau",
-      "Outils digitaux et projets transverses"
-    ]
-  },
-  {
-    "service": "Direction & Coordination",
-    "nom": "Ludwig",
-    "poste": "Responsable Réseau",
-    "telephone": "",
-    "email": "",
-    "quiFaitQuoi": [
-      "Administration base documentaire COUSSI IA",
-      "Remontée des défauts de fabrication sur lignes de produits",
-      "Coordination réseau des 25 magasins"
-    ]
-  },
-  {
-    "service": "Direction & Coordination",
-    "nom": "Jean-François",
+    "nom": "Jérôme NEGRE",
     "poste": "Direction",
-    "telephone": "",
-    "email": "",
+    "service": "Direction",
+    "email": "jerome.negre@aelys.fr",
+    "telephone": "06 09 56 81 24",
+    "quiFaitQuoi": []
+  },
+  {
+    "nom": "Jean-François IMBERT",
+    "poste": "Direction",
+    "service": "Direction",
+    "email": "jf.imbert@aelys.fr",
+    "telephone": "06 70 61 31 29",
     "quiFaitQuoi": [
-      "Escalade SAV très en retard (en copie des mails urgents)",
-      "Validation des défauts de fabrication récurrents",
-      "Décisions commerciales exceptionnelles"
+      "Validation des remboursements clients"
     ]
   },
   {
-    "service": "Direction & Coordination",
-    "nom": "Aurélie",
-    "poste": "Responsable Régionale Nouvelle-Aquitaine",
+    "nom": "Audrey AREES",
+    "poste": "Directrice Administratif & Financier",
+    "service": "Administratif & Finance",
+    "email": "audrey.arees@aelys.fr",
     "telephone": "",
-    "email": "",
     "quiFaitQuoi": [
-      "Formation et accompagnement des équipes terrain",
-      "Référente procédures internes",
-      "Remontées terrain et alimentation base documentaire"
+      "Gestion des finances & versement des salaires",
+      "Remboursements clients (après validation Jean-François)",
+      "Rachat d'or",
+      "Corrections erreurs de caisse",
+      "Gestion des inventaires",
+      "Erreur de stock / étiquette",
+      "Facturation",
+      "Notes de frais à rembourser",
+      "TPE"
     ]
   },
   {
-    "service": "Direction & Coordination",
-    "nom": "Audrey",
-    "poste": "Responsable Régionale (à venir)",
-    "telephone": "",
-    "email": "",
+    "nom": "Sarah TURON-LE HUIDOUX",
+    "poste": "Assistante administrative",
+    "service": "Administratif & Finance",
+    "email": "bureau-occitania@aelys.fr",
+    "telephone": "05 59 60 65 09",
     "quiFaitQuoi": [
-      "Reprend le rôle d'Aurélie",
-      "Remonte les questions terrain sans réponse dans COUSSI IA",
-      "Interlocutrice principale pour les équipes magasins"
+      "Suivi des caisses, règlements CB et pièces fournisseurs",
+      "Saisies factures & récupération factures fournisseurs",
+      "Traitement des litiges fournisseurs",
+      "Suivi des magasins pour intégration des bons de livraison",
+      "Fournitures administratives (cartouches, recharge DYMO)",
+      "Note de frais CB société",
+      "Suivi usures matériel & entretien (clim, extincteurs…)"
     ]
   },
   {
-    "service": "Stock & Logistique",
-    "nom": "Stock Occitania",
-    "poste": "Centrale logistique — magasin 398",
-    "telephone": "",
-    "email": "",
+    "nom": "Chloé ESTANGOY",
+    "poste": "Ressources Humaines",
+    "service": "RH",
+    "email": "chloe.estangoy@aelys.fr",
+    "telephone": "07 45 28 27 46",
     "quiFaitQuoi": [
-      "Réception et traitement des défectueux centrale",
-      "Commandes EDI fournisseurs (produits griffés, montres, plaqué or)",
-      "HUB SAV — dispatch vers ateliers ou fournisseurs",
-      "Navette hebdomadaire (lundi et jeudi)"
+      "Recrutements & contrats de travail",
+      "Plannings & validation des congés payés",
+      "Vérification des heures, absences, arrêts maladies",
+      "Code alarme & code ODEIS",
+      "Paie & visites médicales",
+      "Badgeage"
     ]
   },
   {
-    "service": "SAV & Ateliers",
-    "nom": "Atelier Calame — Bijouterie",
-    "poste": "Atelier 8116 — Pau",
-    "telephone": "",
-    "email": "",
+    "nom": "Ludwig BARRACHIN",
+    "poste": "Responsable Logistique",
+    "service": "Logistique",
+    "email": "ludwig.barrachin@aelys.fr",
+    "telephone": "06 11 48 04 08",
     "quiFaitQuoi": [
-      "Réparations bijoux (or, argent, acier, plaqué)",
-      "Mises à taille",
-      "Soudures, rhodiage, sertissage"
+      "Problèmes informatiques & connexions ODEIS",
+      "Développement & gestion des applications",
+      "Coordination de l'équipe logistique",
+      "Gestion de la data"
     ]
   },
   {
-    "service": "SAV & Ateliers",
-    "nom": "Atelier Calame — Horlogerie",
-    "poste": "Atelier 8003 — Pau",
-    "telephone": "",
-    "email": "",
+    "nom": "Sophie GUILCHER",
+    "poste": "Approvisionneuse Occitania",
+    "service": "Logistique",
+    "email": "stock-occitania@aelys.fr",
+    "telephone": "05 59 53 54 71",
     "quiFaitQuoi": [
-      "Réparations montres",
-      "Changements de piles",
-      "Bracelets et fermoirs montres"
+      "Intégration des BL des magasins",
+      "Impression d'étiquettes & picking colis",
+      "Référencement produit / problème étiquetage",
+      "Écarts de livraison",
+      "Fournitures logistiques (gants, scotch, bandes de garantie…)"
     ]
   },
   {
-    "service": "SAV & Ateliers",
-    "nom": "Nassima",
-    "poste": "HUB SAV Fournisseurs — CABI",
-    "telephone": "",
-    "email": "@officeCABI",
+    "nom": "Nassima CHAYEK",
+    "poste": "Responsable CABI",
+    "service": "Logistique",
+    "email": "office-cabi@aelys.fr",
+    "telephone": "05 59 80 08 21",
     "quiFaitQuoi": [
-      "Gestion des SAV partis chez les fournisseurs",
-      "Lien entre les magasins et les fournisseurs pour les SAV",
-      "Suivi des retours fournisseurs"
+      "Centrale d'achats — achats PL (bijoux or et argent)",
+      "SAV produits de marque & envoi SAV fournisseurs",
+      "Relations fournisseurs & commandes CABI 8888"
     ]
   },
   {
-    "service": "Fournisseurs",
-    "nom": "Christine",
-    "poste": "Fournisseur Fairbelle",
-    "telephone": "",
-    "email": "",
+    "nom": "Emeric GARDELLE",
+    "poste": "Alternant Logistique",
+    "service": "Logistique",
+    "email": "stock-occitania@aelys.fr",
+    "telephone": "05 59 53 54 71",
     "quiFaitQuoi": [
-      "Disponibilités et commandes Fairbelle",
-      "Contacter par mail pour vérifier dispo avant commande",
-      "Mentionner l'urgence si délai contraint"
+      "Picking (répartition à partir d'un tableau Excel)",
+      "Expédition & réception des colis magasins"
     ]
   },
   {
-    "service": "Fournisseurs",
-    "nom": "Alias Concept / CABI OR",
-    "poste": "Fournisseur — codes C211 / 8888",
-    "telephone": "",
-    "email": "",
+    "nom": "Manon MIGNOT",
+    "poste": "Responsable Marketing",
+    "service": "Marketing",
+    "email": "manon.mignot@aelys.fr",
+    "telephone": "05 64 27 10 37",
     "quiFaitQuoi": [
-      "Fabrication sur commande (or 9k et 18k)",
-      "Délai jusqu'à 2 mois si fabrication nécessaire",
-      "Conversion 9k→18k : remplacer le '3' par '1' dans la réf fournisseur"
+      "Fournitures marketing consommables (pastilles, cartes fidélité, dépliants…)",
+      "Besoins visuels magasins (affichage, takos, opérations…)",
+      "Display & présentoirs de marques",
+      "Dysfonctionnement TV magasin",
+      "Communication centres commerciaux",
+      "Challenges magasin & actions marketing locales",
+      "E-réputation & Google My Business",
+      "Régularisation bons fidélités clients",
+      "Boîte contact litiges clients magasin"
     ]
   },
   {
-    "service": "Fournisseurs",
-    "nom": "Robbez Masson",
-    "poste": "Fournisseur Argent & Or",
-    "telephone": "",
-    "email": "",
+    "nom": "Charline BALLARIN",
+    "poste": "Alternante Marketing",
+    "service": "Marketing",
+    "email": "marketing.aelys@aelys.fr",
+    "telephone": "05 64 27 10 37",
     "quiFaitQuoi": [
-      "Commandes argent et or via site en ligne",
-      "⚠️ Vider le panier après consultation si pas de commande",
-      "Modifier le menu déroulant en haut à droite pour sélectionner votre magasin"
+      "Créations supports visuels (affichage A4/A5/divers)",
+      "Besoins vidéos animation TV",
+      "Animation réseaux sociaux (comptes galeries commerciales)"
     ]
   },
   {
-    "service": "Fournisseurs",
-    "nom": "Lucas Lucor",
-    "poste": "Fournisseur Or",
-    "telephone": "",
-    "email": "",
+    "nom": "Wendy VIGNES",
+    "poste": "Responsable Web",
+    "service": "Web",
+    "email": "wendy.vignes@aelys.fr",
+    "telephone": "05 64 27 10 37",
     "quiFaitQuoi": [
-      "Catalogues disponibles pour visuels (prix parfois obsolètes)",
-      "Saisir toutes les options sur le site : or creux/masse, 9k/18k, lettre soudée/gravée",
-      "Se référer au site fournisseur pour les prix à jour"
+      "Gestion des commandes web (livraison, click & collect, e-réservation)",
+      "Fournitures commandes web (écrins, papiers de soie, cartons…)",
+      "Questions & litiges liés au site web"
+    ]
+  },
+  {
+    "nom": "Maylis ANDRIEU",
+    "poste": "Alternante Web",
+    "service": "Web",
+    "email": "web@aelys.fr",
+    "telephone": "05 64 27 10 37",
+    "quiFaitQuoi": [
+      "Support commandes web",
+      "Boîte contact liée aux commandes web"
     ]
   }
 ]
