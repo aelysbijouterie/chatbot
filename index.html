@@ -775,7 +775,44 @@ function closeAnnuaire() {
   document.getElementById('annOverlay').classList.remove('open');
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAnnuaire(); });
+
+// ── Rebuild base documentaire ─────────────────────────────
+async function rebuildBase() {
+  const btn = document.getElementById('rebuildBtn');
+  btn.textContent = '⏳ Reconstruction…';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/rebuild', { method: 'POST' });
+    const d = await r.json();
+    btn.textContent = d.ok ? '✅ Base reconstruite !' : '❌ Erreur';
+    setTimeout(() => { btn.textContent = '🔄 Reconstruire la base'; btn.disabled = false; }, 3000);
+  } catch {
+    btn.textContent = '❌ Serveur non joignable';
+    setTimeout(() => { btn.textContent = '🔄 Reconstruire la base'; btn.disabled = false; }, 3000);
+  }
+}
 // ────────────────────────────────────────────────────────────
 </script>
+
+<style>
+#adminBar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--navy); padding: 6px 16px;
+  display: flex; align-items: center; gap: 12px; z-index: 100;
+  font-size: 12px; color: rgba(255,255,255,0.5);
+}
+#rebuildBtn {
+  background: var(--gold); color: #fff; border: none;
+  padding: 4px 14px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-family: inherit;
+}
+#rebuildBtn:disabled { opacity: 0.6; cursor: wait; }
+</style>
+
+<div id="adminBar">
+  <span>Administration</span>
+  <button id="rebuildBtn" onclick="rebuildBase()">🔄 Reconstruire la base</button>
+  <span style="margin-left:auto; opacity:0.4;">AUREL'IA — Réseau local</span>
+</div>
 </body>
 </html>
