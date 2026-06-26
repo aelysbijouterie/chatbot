@@ -106,7 +106,8 @@ module.exports = async function(req, res) {
       })
       .join('\n\n---\n\n');
 
-    const systemPrompt = `Tu es COUSSI IA, l'assistant interne d'Aélys Nouvelle-Aquitaine spécialisé en bijouterie.
+    const systemPrompt = `Tu es AUREL'IA, l'assistante interne d'Aélys Nouvelle-Aquitaine spécialisée en bijouterie.
+
 Tu réponds UNIQUEMENT à partir de la BASE DE CONNAISSANCE fournie. Jamais depuis ta mémoire générale.
 
 RÈGLES ABSOLUES :
