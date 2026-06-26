@@ -273,12 +273,13 @@
 
     .ann-card-top { display:flex; align-items:flex-start; gap:12px; }
     .ann-avatar {
-      width:38px; height:38px; border-radius:10px; flex-shrink:0;
+      width:44px; height:44px; border-radius:12px; flex-shrink:0;
       background:linear-gradient(135deg,var(--navy),#1e3a5f);
       display:flex; align-items:center; justify-content:center;
       font-size:1rem; color:var(--gold); font-family:'Playfair Display',serif;
-      font-weight:600;
+      font-weight:600; overflow:hidden;
     }
+    .ann-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
     .ann-info { flex:1; min-width:0; }
     .ann-nom { font-weight:600; font-size:0.9rem; color:var(--navy); line-height:1.2; }
     .ann-poste { font-size:0.76rem; color:var(--text-muted); margin-top:2px; line-height:1.3; }
@@ -737,7 +738,7 @@ function renderAnnuaire() {
       html += `
         <div class="ann-card" id="${id}" onclick="toggleCard('${id}')">
           <div class="ann-card-top">
-            <div class="ann-avatar">${getInitials(c.nom)}</div>
+            <div class="ann-avatar">${c.photo ? `<img src="${c.photo}" alt="${c.nom}" />` : getInitials(c.nom)}</div>
             <div class="ann-info">
               <div class="ann-nom">${c.nom}</div>
               <div class="ann-poste">${c.poste}</div>

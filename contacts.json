@@ -5,6 +5,7 @@
     "service": "Direction",
     "email": "jerome.negre@aelys.fr",
     "telephone": "06 09 56 81 24",
+    "photo": "/photos/jerome-negre.jpg",
     "quiFaitQuoi": []
   },
   {
@@ -13,6 +14,7 @@
     "service": "Direction",
     "email": "jf.imbert@aelys.fr",
     "telephone": "06 70 61 31 29",
+    "photo": "/photos/jf-imbert.jpg",
     "quiFaitQuoi": [
       "Validation des remboursements clients"
     ]
@@ -23,6 +25,7 @@
     "service": "Administratif & Finance",
     "email": "audrey.arees@aelys.fr",
     "telephone": "05 59 60 65 09 / 06 30 89 68 19",
+    "photo": "/photos/audrey-arees.jpg",
     "quiFaitQuoi": [
       "Gestion des finances & versement des salaires",
       "Remboursements clients (après validation Jean-François)",
@@ -32,7 +35,8 @@
       "Erreur de stock / étiquette",
       "Facturation",
       "Notes de frais à rembourser",
-      "TPE"
+      "TPE",
+      "Suivi usures matériel & entretien (clim, extincteurs…)"
     ]
   },
   {
@@ -41,14 +45,14 @@
     "service": "Administratif & Finance",
     "email": "bureau-occitania@aelys.fr",
     "telephone": "05 59 60 65 09",
+    "photo": "/photos/sarah-turon.jpg",
     "quiFaitQuoi": [
       "Suivi des caisses, règlements CB et pièces fournisseurs",
       "Saisies factures & récupération factures fournisseurs",
       "Traitement des litiges fournisseurs",
       "Suivi des magasins pour intégration des bons de livraison",
       "Fournitures administratives (cartouches, recharge DYMO)",
-      "Note de frais CB société",
-      "Suivi usures matériel & entretien (clim, extincteurs…)"
+      "Note de frais CB société"
     ]
   },
   {
@@ -57,12 +61,14 @@
     "service": "RH",
     "email": "chloe.estangoy@aelys.fr",
     "telephone": "07 45 28 27 46",
+    "photo": "/photos/chloe-estangoy.jpg",
     "quiFaitQuoi": [
       "Recrutements & contrats de travail",
       "Plannings & validation des congés payés",
       "Vérification des heures, absences, arrêts maladies",
       "Code alarme & code ODEIS",
-      "Paie & visites médicales",
+      "Paie",
+      "Visites médicales",
       "Badgeage"
     ]
   },
@@ -72,6 +78,7 @@
     "service": "Logistique",
     "email": "ludwig.barrachin@aelys.fr",
     "telephone": "06 11 48 04 08",
+    "photo": "/photos/ludwig-barrachin.jpg",
     "quiFaitQuoi": [
       "Problèmes informatiques & connexions ODEIS",
       "Développement & gestion des applications",
@@ -85,6 +92,7 @@
     "service": "Logistique",
     "email": "stock-occitania@aelys.fr",
     "telephone": "05 59 53 54 71",
+    "photo": "/photos/sophie-guilcher.jpg",
     "quiFaitQuoi": [
       "Intégration des BL des magasins",
       "Impression d'étiquettes & picking colis",
@@ -99,6 +107,7 @@
     "service": "Logistique",
     "email": "office-cabi@aelys.fr",
     "telephone": "05 59 80 08 21",
+    "photo": "/photos/nassima-chayek.jpg",
     "quiFaitQuoi": [
       "Centrale d'achats — achats PL (bijoux or et argent)",
       "SAV produits de marque & envoi SAV fournisseurs",
@@ -111,6 +120,7 @@
     "service": "Logistique",
     "email": "stock-occitania@aelys.fr",
     "telephone": "05 59 53 54 71",
+    "photo": "/photos/emeric-gardelle.jpg",
     "quiFaitQuoi": [
       "Picking (répartition à partir d'un tableau Excel)",
       "Expédition & réception des colis magasins"
@@ -122,6 +132,7 @@
     "service": "Marketing",
     "email": "manon.mignot@aelys.fr",
     "telephone": "05 64 27 10 37",
+    "photo": "/photos/manon-mignot.jpg",
     "quiFaitQuoi": [
       "Fournitures marketing consommables (pastilles, cartes fidélité, dépliants…)",
       "Besoins visuels magasins (affichage, takos, opérations…)",
@@ -140,6 +151,7 @@
     "service": "Marketing",
     "email": "marketing.aelys@aelys.fr",
     "telephone": "05 64 27 10 37",
+    "photo": "/photos/charline-ballarin.jpg",
     "quiFaitQuoi": [
       "Créations supports visuels (affichage A4/A5/divers)",
       "Besoins vidéos animation TV",
@@ -152,6 +164,7 @@
     "service": "Web",
     "email": "wendy.vignes@aelys.fr",
     "telephone": "05 64 27 10 37",
+    "photo": "/photos/wendy-vignes.jpg",
     "quiFaitQuoi": [
       "Gestion des commandes web (livraison, click & collect, e-réservation)",
       "Fournitures commandes web (écrins, papiers de soie, cartons…)",
@@ -164,9 +177,11 @@
     "service": "Web",
     "email": "web@aelys.fr",
     "telephone": "05 64 27 10 37",
+    "photo": "/photos/maylis-andrieu.jpg",
     "quiFaitQuoi": [
-      "Support commandes web",
-      "Boîte contact liée aux commandes web"
+      "Gestion des commandes web (livraison, click & collect, e-réservation)",
+      "Fournitures commandes web (écrins, papiers de soie, cartons…)",
+      "Questions & litiges liés au site web"
     ]
   }
 ]
