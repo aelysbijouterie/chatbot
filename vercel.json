@@ -4,6 +4,9 @@
   "functions": {
     "api/chat.js": {
       "includeFiles": "api/kb.json"
+    },
+    "api/pdf.js": {
+      "includeFiles": "api/kb.json"
     }
   }
 }

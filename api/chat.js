@@ -26,13 +26,26 @@ module.exports = async function(req, res) {
     // }
     const docs = require('./kb.json');
 
+    // Mots vides fran\u00e7ais : purement grammaticaux, sans valeur de recherche.
+    // Volontairement PAS de pr\u00e9positions courtes comme "or", "sans", "avec", "sur" :
+    // dans ce m\u00e9tier elles distinguent des proc\u00e9dures diff\u00e9rentes
+    // (ex: "or" = mati\u00e8re, "sans/avec remise" = deux proc\u00e9dures diff\u00e9rentes).
+    const STOPWORDS = new Set([
+      'le','la','les','un','une','des','du','de','au','aux','et','en','\u00e0',
+      'que','qui','quoi','ce','se','si',
+      'est','sont','ont','pas','plus','tr\u00e8s','tout','tous','bien','m\u00eame',
+      'cette','cet','ces','leur','leurs','mon','ton','son','nos','vos',
+      'on','il','ne','ma','sa','ta','tu','ci','car','donc','lui','eux','me','te','y','l\u00e0','o\u00f9',
+      'the','and','for','this','that','with','from','into','your','you','are'
+    ]);
+
     function tokenize(text) {
       return (text || '')
         .toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9\s]/g, ' ')
         .split(/\s+/)
-        .filter(w => w.length >= 3);
+        .filter(w => w.length >= 2 && !STOPWORDS.has(w));
     }
 
     // ── Normalisation des champs (supporte ancien format title/content ET nouveau titre/contenu) ──
@@ -167,16 +180,24 @@ ${context}`;
     }
 
     // ── Fiche PDF associée ──────────────────────────────────────
-    // On affiche le bouton PDF uniquement si :
-    // - la fiche la mieux classée est de type "procedure"
-    // - elle possède un champ pdfUrl renseigné
+    // Une PJ est fournie à chaque réponse :
+    // - si la fiche a un vrai PDF source (pdfUrl), on l'utilise ;
+    // - sinon, un PDF est généré à la volée à partir du texte de la fiche
+    //   (voir /api/pdf.js), pour qu'il y ait toujours une pièce jointe.
     const primaryDoc = topDocs[0];
     let pdf = null;
-    if (primaryDoc.type === 'procedure' && primaryDoc.pdfUrl) {
+    if (primaryDoc.pdfUrl) {
       pdf = {
         titre: primaryDoc.titre,
         url: primaryDoc.pdfUrl,
         dateMAJ: primaryDoc.dateMAJ || null
+      };
+    } else if (primaryDoc.id) {
+      pdf = {
+        titre: primaryDoc.titre,
+        url: `/api/pdf?id=${encodeURIComponent(primaryDoc.id)}`,
+        dateMAJ: primaryDoc.dateMAJ || null,
+        genere: true
       };
     }
 

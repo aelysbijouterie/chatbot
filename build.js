@@ -8,11 +8,16 @@ const GITHUB_USER = 'aelysbijouterie';
 const GITHUB_REPO = 'chatbot';
 const GITHUB_BRANCH = 'main';
 
+// Mots vides français : purement grammaticaux, sans valeur de recherche.
+// Volontairement PAS de prépositions courtes comme "or", "sans", "avec", "sur" :
+// dans ce métier elles distinguent des procédures différentes
+// (ex: "or" = matière, "sans/avec remise" = deux procédures différentes).
 const STOPWORDS = new Set([
-  'le','la','les','un','une','des','du','de','au','aux','et','en','à','par',
-  'pour','sur','sous','dans','avec','sans','que','qui','quoi','ce','se','si',
+  'le','la','les','un','une','des','du','de','au','aux','et','en','à',
+  'que','qui','quoi','ce','se','si',
   'est','sont','ont','pas','plus','très','tout','tous','bien','même',
   'cette','cet','ces','leur','leurs','mon','ton','son','nos','vos',
+  'on','il','ne','ma','sa','ta','tu','ci','car','donc','lui','eux','me','te','y','là','où',
   'the','and','for','this','that','with','from','into','your','you','are'
 ]);
 
@@ -27,11 +32,11 @@ function extractKeywords(titre, contenu) {
   const words = (titre + ' ' + contenu)
     .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
-    .filter(w => w.length >= 4 && !STOPWORDS.has(w));
+    .filter(w => w.length >= 2 && !STOPWORDS.has(w));
   words.forEach(w => freq[w] = (freq[w] || 0) + 1);
   titre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
-    .filter(w => w.length >= 4 && !STOPWORDS.has(w))
+    .filter(w => w.length >= 2 && !STOPWORDS.has(w))
     .forEach(w => freq[w] = (freq[w] || 0) + 3);
   return Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 12).map(([w]) => w);
 }
