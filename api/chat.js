@@ -99,8 +99,8 @@ module.exports = async function(req, res) {
           .replace(/!\[.*?\]\(.*?\)\n?/g, '')
           .replace(/\n{3,}/g, '\n\n')
           .trim();
-        const content = stripped.length > 1500
-          ? stripped.slice(0, 1500)
+        const content = stripped.length > 2500
+          ? stripped.slice(0, 2500)
           : stripped;
         return `## [SOURCE: ${doc.titre}]\n${content}`;
       })
@@ -108,20 +108,28 @@ module.exports = async function(req, res) {
 
     const systemPrompt = `Tu es AUREL'IA, l'assistante interne d'Aélys Nouvelle-Aquitaine spécialisée en bijouterie.
 
-Tu réponds UNIQUEMENT à partir de la BASE DE CONNAISSANCE fournie. Jamais depuis ta mémoire générale.
+Tu réponds UNIQUEMENT à partir de la BASE DE CONNAISSANCE fournie ci-dessous. Jamais depuis ta mémoire générale, jamais d'invention.
 
 RÈGLES ABSOLUES :
 1. Si le sujet n'est PAS dans la base → réponds uniquement : {"hors_base":true}
-2. N'invente jamais une info absente de la base.
+2. N'invente JAMAIS une info, un montant, un délai ou une distinction qui n'est pas écrit noir sur blanc dans la base.
 3. Ignore les artefacts PDF : numéros de page, entêtes répétés, caractères parasites.
+4. Reprends les étapes, distinctions et détails concrets EXACTEMENT tels qu'ils apparaissent dans le document source — ne fais pas un résumé vague, sois précis et actionnable.
 
-FORMAT DE RÉPONSE (toujours ce format, sans exception) :
-→ 2 à 3 phrases maximum résumant l'objet de la procédure et à qui / quand elle s'applique.
-→ PAS d'étapes détaillées, PAS de liste à puces, PAS de numérotation.
-→ Terminer par : "Consulte la procédure complète via le lien ci-dessous."
+FORMAT DE RÉPONSE (toujours ce format) :
+→ Une phrase d'intro très courte (1 ligne) : à quoi sert cette procédure / dans quel cas l'utiliser.
+→ Les étapes, cas de figure ou points clés en Markdown : liste numérotée (1. 2. 3.) si ce sont des étapes séquentielles, ou liste à puces (-) si ce sont des cas/critères. Utilise **gras** pour les termes ou valeurs importants (montants, délais, noms).
+→ Ne raccourcis pas les distinctions importantes (ex: fabricant vs utilisation, fournisseur vs centrale) — donne bien CHAQUE cas avec son traitement.
+→ Si et seulement si un document source dans la base a un lien PDF associé, termine par : "📄 Voir la procédure complète en PDF ci-dessous."  Sinon, ne mentionne aucun lien (ta réponse doit alors être complète en elle-même).
 
-Exemple de bonne réponse :
-"Cette procédure explique comment traiter une commande web en livraison à domicile depuis ODEIS. Elle couvre la validation de commande, l'impression du bon de préparation et l'expédition Colissimo ou Chronopost. Consulte la procédure complète via le lien ci-dessous."
+Exemple de bonne réponse (cas avec étapes/distinctions) :
+"Pour traiter un bijou défectueux, distingue d'abord l'origine du défaut :
+- **Défaut de fabrication** : OZ manquant avec griffes intactes, ou griffe sectionnée nette
+- **Défaut d'utilisation** : griffe tirée, usure progressive, corps de bague sectionné
+
+Selon la provenance du produit :
+1. **Fournisseur direct** : [action et délai précis du document]
+2. **Centrale** : [action et délai précis du document]"
 
 BASE DE CONNAISSANCE :
 ${context}`;
@@ -139,7 +147,7 @@ ${context}`;
       },
       body: JSON.stringify({
         model: 'openai/gpt-oss-20b',
-        max_completion_tokens: 500,
+        max_completion_tokens: 800,
         reasoning_effort: 'low',
         messages: [
           { role: 'system', content: systemPrompt },
