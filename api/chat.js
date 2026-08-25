@@ -171,6 +171,9 @@ ${context}`;
     return res.status(200).json({ text, suggestions, pdf });
 
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      error: error.message,
+      cause: error.cause ? String(error.cause) : null
+    });
   }
 };
