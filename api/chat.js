@@ -139,7 +139,8 @@ ${context}`;
       },
       body: JSON.stringify({
         model: 'openai/gpt-oss-20b',
-        max_tokens: 250,
+        max_completion_tokens: 500,
+        reasoning_effort: 'low',
         messages: [
           { role: 'system', content: systemPrompt },
           ...historyMessages
