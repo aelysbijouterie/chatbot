@@ -9,7 +9,7 @@ module.exports = async function(req, res) {
   try {
     const { messages } = req.body;
     const userQuestion = messages[messages.length - 1].content;
-    const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+    const apiKey = process.env.GROQ_API_KEY;
 
     // ── Base documentaire ──────────────────────────────────────
     // kb.json est généré automatiquement par build.js à partir des .md dans docs/
@@ -131,11 +131,14 @@ ${context}`;
       content: m.content
     }));
 
-    const groqRes = await fetch(`${OLLAMA_URL}/v1/chat/completions`, {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || 'mistral',
+        model: 'llama-3.1-8b-instant',
         max_tokens: 250,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -145,7 +148,7 @@ ${context}`;
     });
 
     const data = await groqRes.json();
-    if (!groqRes.ok) throw new Error(data.error?.message || 'Erreur Ollama');
+    if (!groqRes.ok) throw new Error(data.error?.message || 'Erreur Groq');
 
     const text = (data.choices?.[0]?.message?.content || '').trim();
     if (!text) throw new Error('Réponse vide');
