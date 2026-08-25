@@ -1,3 +1,5 @@
+const { getMagasin, getMagasinNom } = require('../lib/stores.js');
+
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -10,7 +12,9 @@ module.exports = async function(req, res) {
   if (!WEBHOOK) return res.status(200).json({ skipped: true });
 
   try {
-    const { question, reponse, type, magasin } = req.body;
+    const { question, reponse, type } = req.body;
+    const magasinCode = getMagasin(req);
+    const magasinNom = magasinCode ? getMagasinNom(magasinCode) : null;
     await fetch(WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -19,7 +23,7 @@ module.exports = async function(req, res) {
         question,
         type,
         reponse: reponse || '',
-        magasin: magasin || ''
+        magasin: magasinNom ? `${magasinNom} (${magasinCode})` : (magasinCode || '')
       })
     });
     return res.status(200).json({ ok: true });

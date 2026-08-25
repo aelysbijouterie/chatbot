@@ -321,6 +321,22 @@
     .ann-btn:hover { background:var(--navy); color:var(--gold); border-color:var(--navy); }
     /* ─────────────────────────────────────────── */
 
+    /* Bouton retour (masqué tant qu'on est sur l'accueil) */
+    .back-btn { display:none; }
+    .back-btn.visible { display:flex; }
+
+    /* ── Liste des fiches d'une catégorie (réutilise le panneau annuaire) ── */
+    .cat-item {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background:white; border:1px solid rgba(168,123,39,0.12);
+      border-radius:12px; padding:13px 16px; margin-bottom:8px;
+      cursor:pointer; transition:all 0.18s;
+      font-size:0.87rem; color:var(--navy); font-weight:500;
+    }
+    .cat-item:hover { border-color:var(--gold); box-shadow:0 4px 16px rgba(168,123,39,0.12); transform:translateY(-1px); }
+    .cat-item-arrow { color:var(--gold); flex-shrink:0; }
+    /* ─────────────────────────────────────────── */
+
     @media (max-width:600px) {
       .app { height:100dvh;max-height:100dvh;border-radius:0; }
       .bubble { max-width:82%; }
@@ -349,8 +365,12 @@
     </div>
     <div class="header-text">
       <div class="header-title">AUREL'IA</div>
-      <div class="header-sub">Assistante Aélys Nouvelle-Aquitaine</div>
+      <div class="header-sub" id="headerSub">Assistante Aélys Nouvelle-Aquitaine</div>
     </div>
+    <button class="ann-btn back-btn" id="backBtn" onclick="goHome()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      Accueil
+    </button>
     <button class="ann-btn" onclick="toggleAnnuaire()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Annuaire
@@ -381,6 +401,22 @@
   </div>
   <!-- ───────────────────── -->
 
+  <!-- ── PANNEAU CATÉGORIE (liste des fiches) ── -->
+  <div class="annuaire-overlay" id="catOverlay" onclick="closeCategory()"></div>
+  <div class="annuaire-panel" id="catPanel">
+    <div class="ann-header">
+      <div class="ann-header-left">
+        <div>
+          <div class="ann-title" id="catTitle">📁 Catégorie</div>
+          <div class="ann-sub" id="catSub">Procédures</div>
+        </div>
+      </div>
+      <button class="ann-close" onclick="closeCategory()">✕</button>
+    </div>
+    <div class="ann-body" id="catBody"></div>
+  </div>
+  <!-- ───────────────────── -->
+
   <div class="chat" id="chat">
     <div class="welcome" id="welcome">
       <span class="welcome-icon">✦</span>
@@ -388,32 +424,33 @@
       <p>Posez-moi vos questions sur les procédures internes. Je m'appuie uniquement sur la base documentaire Aélys.</p>
 
       <div class="quick-grid">
-        <button class="quick-btn" onclick="ask('Procédure commandes or sans remise')">
+        <button class="quick-btn" onclick="openCategory('Commandes', 'Commandes')">
           <div class="btn-icon">🛒</div>
           <div class="btn-label">Commandes<small>Or, argent, griffé, remisé…</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Procédure défectueux — comment détecter fabrication ou utilisation')">
+        <button class="quick-btn" onclick="openCategory('Défectueux', 'Defectueux')">
           <div class="btn-icon">🔍</div>
           <div class="btn-label">Défectueux<small>Procédures & détection</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Procédure SAV créer une fiche, aide décisionnelle garantie')">
+        <button class="quick-btn" onclick="openCategory('SAV & garanties', 'Sav')">
           <div class="btn-icon">🔧</div>
           <div class="btn-label">SAV & garanties<small>Réparations, litiges, décisions</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Techniques de vente, objectifs PM PVM IV, SONCAS')">
+        <button class="quick-btn" onclick="openCategory('Techniques de vente', 'Vente')">
           <div class="btn-icon">💬</div>
           <div class="btn-label">Techniques de vente<small>6 temps, SONCAS, objectifs</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Références ODEIS, code famille, moyens de règlement')">
+        <button class="quick-btn" onclick="openCategory('ODEIS & références', 'References')">
           <div class="btn-icon">💻</div>
           <div class="btn-label">ODEIS & références<small>Logiciel, codes, règlement</small></div>
         </button>
-        <button class="quick-btn" onclick="ask('Programme formation nouvel entrant semaines')">
+        <button class="quick-btn" onclick="openCategory('Formation', 'Formation')">
           <div class="btn-icon">📚</div>
           <div class="btn-label">Formation<small>Programme nouvel entrant</small></div>
         </button>
       </div>
     </div>
+    <div id="chatMessages"></div>
     <div class="typing" id="typing">
       <div class="avatar" style="background:linear-gradient(135deg,#112033,#1e3a5f);color:#A87B27">✦</div>
       <div class="typing-dots">
@@ -436,16 +473,113 @@
 </div>
 
 <script>
-const chatEl    = document.getElementById('chat');
-const inputEl   = document.getElementById('userInput');
-const sendBtnEl = document.getElementById('sendBtn');
-const typingEl  = document.getElementById('typing');
+const chatEl     = document.getElementById('chat');
+const messagesEl = document.getElementById('chatMessages');
+const inputEl    = document.getElementById('userInput');
+const sendBtnEl  = document.getElementById('sendBtn');
+const typingEl   = document.getElementById('typing');
 
 // ── Mémoire de conversation (max 6 échanges = 12 messages) ──
 const conversationHistory = [];
 
 inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) sendMessage(); });
 function ask(q) { inputEl.value = q; sendMessage(); }
+
+// ── Accueil / retour ──────────────────────────────────────────
+function goHome() {
+  document.getElementById('welcome').style.display = '';
+  messagesEl.style.display = 'none';
+  typingEl.classList.remove('active');
+  document.getElementById('backBtn').classList.remove('visible');
+  scrollDown();
+}
+function goToChat() {
+  document.getElementById('welcome').style.display = 'none';
+  messagesEl.style.display = '';
+  document.getElementById('backBtn').classList.add('visible');
+}
+
+// ── Catégories : liste des fiches (au lieu d'une question figée) ──
+let DOCS_INDEX = [];
+async function loadDocsIndex() {
+  try {
+    const res = await fetch('/docs-index.json');
+    DOCS_INDEX = await res.json();
+  } catch(e) { DOCS_INDEX = []; }
+}
+loadDocsIndex();
+
+function openCategory(label, categorieValue) {
+  const items = DOCS_INDEX.filter(d => d.categorie === categorieValue);
+  document.getElementById('catTitle').textContent = '📁 ' + label;
+  document.getElementById('catSub').textContent = items.length + (items.length > 1 ? ' procédures' : ' procédure');
+  const body = document.getElementById('catBody');
+  if (!items.length) {
+    body.innerHTML = '<div class="ann-empty">Aucune procédure trouvée dans cette catégorie.</div>';
+  } else {
+    body.innerHTML = items.map(d => `
+      <div class="cat-item" onclick="askFromCategory('${d.titre.replace(/'/g, "\\'")}')">
+        <span>${d.titre}</span>
+        <span class="cat-item-arrow">→</span>
+      </div>`).join('');
+  }
+  document.getElementById('catPanel').classList.add('open');
+  document.getElementById('catOverlay').classList.add('open');
+}
+function closeCategory() {
+  document.getElementById('catPanel').classList.remove('open');
+  document.getElementById('catOverlay').classList.remove('open');
+}
+function askFromCategory(titre) {
+  closeCategory();
+  ask(titre);
+}
+
+// ── Identification du magasin (Basic Auth) + historique local ─
+let currentMagasin = null;
+let renderLog = [];
+const HISTORY_LIMIT = 40;
+
+function historyKey() { return 'aurelia_history_' + (currentMagasin || 'anonyme'); }
+
+function saveHistory() {
+  try { localStorage.setItem(historyKey(), JSON.stringify(renderLog.slice(-HISTORY_LIMIT))); }
+  catch(e) { /* silencieux (quota, navigation privée…) */ }
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(historyKey());
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved) || !saved.length) return;
+    renderLog = saved;
+    saved.forEach(entry => {
+      if (entry.type === 'user') {
+        addBubble(entry.text, 'user');
+        conversationHistory.push({ role: 'user', content: entry.text });
+      } else if (entry.type === 'assistant') {
+        addAssistantBubble(entry.text, entry.question, entry.suggestions || [], entry.pdf || null);
+        conversationHistory.push({ role: 'assistant', content: entry.text });
+      } else if (entry.type === 'alert') {
+        addAlertBubble(entry.question);
+        conversationHistory.push({ role: 'assistant', content: '[Information non disponible dans la base]' });
+      }
+    });
+    goToChat();
+  } catch(e) { /* silencieux */ }
+}
+
+async function loadWhoami() {
+  try {
+    const res = await fetch('/api/whoami');
+    const data = await res.json();
+    currentMagasin = data.magasin || null;
+    if (data.nom) document.getElementById('headerSub').textContent = `${data.nom} (${data.magasin})`;
+  } catch(e) { /* silencieux */ }
+  loadHistory();
+}
+loadWhoami();
 
 // ── Logging Google Sheets ────────────────────────────────────
 async function logQuestion(question, reponse, type) {
@@ -473,8 +607,10 @@ async function sendMessage() {
   const msg = inputEl.value.trim();
   if (!msg) return;
 
-  document.getElementById('welcome')?.remove();
+  goToChat();
   addBubble(msg, 'user');
+  renderLog.push({ type: 'user', text: msg });
+  saveHistory();
 
   // Ajouter à l'historique
   conversationHistory.push({ role: 'user', content: msg });
@@ -496,12 +632,16 @@ async function sendMessage() {
 
     if (data.hors_base === true) {
       addAlertBubble(msg);
+      renderLog.push({ type: 'alert', question: msg });
+      saveHistory();
       sendAlertEmail(msg);
       logQuestion(msg, '', 'hors_base');
       conversationHistory.push({ role: 'assistant', content: '[Information non disponible dans la base]' });
     } else if (data.text) {
       const txt = data.text.trim();
       addAssistantBubble(txt, msg, data.suggestions || [], data.pdf || null);
+      renderLog.push({ type: 'assistant', text: txt, question: msg, suggestions: data.suggestions || [], pdf: data.pdf || null });
+      saveHistory();
       logQuestion(msg, txt, 'reponse');
       conversationHistory.push({ role: 'assistant', content: txt });
     } else if (data.error) {
@@ -536,7 +676,7 @@ function addAssistantBubble(text, question, suggestions, pdf) {
   bub.innerHTML = typeof marked !== 'undefined' ? marked.parse(text) : text;
   wrap.appendChild(av);
   wrap.appendChild(bub);
-  chatEl.insertBefore(wrap, typingEl);
+  messagesEl.appendChild(wrap);
 
   // Carte PDF (si une procédure correspond)
   if (pdf && pdf.url) {
@@ -556,7 +696,7 @@ function addAssistantBubble(text, question, suggestions, pdf) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
         </div>
       </a>`;
-    chatEl.insertBefore(pdfWrap, typingEl);
+    messagesEl.appendChild(pdfWrap);
   }
 
   // Boutons d'action
@@ -573,7 +713,7 @@ function addAssistantBubble(text, question, suggestions, pdf) {
     <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'negatif')" title="Réponse incorrecte">
       👎 Incorrecte
     </button>`;
-  chatEl.insertBefore(actions, typingEl);
+  messagesEl.appendChild(actions);
 
   // Suggestions "Voir aussi"
   const filtered = suggestions.filter(s => s && s.length > 0).slice(0, 3);
@@ -585,7 +725,7 @@ function addAssistantBubble(text, question, suggestions, pdf) {
       <div class="suggestions-chips">
         ${filtered.map(s => `<button class="sugg-chip" onclick="ask('${s.replace(/'/g, "\\'")}')">${s}</button>`).join('')}
       </div>`;
-    chatEl.insertBefore(sugg, typingEl);
+    messagesEl.appendChild(sugg);
   }
 
   scrollDown();
@@ -635,7 +775,7 @@ function addBubble(text, role) {
   }
   wrap.appendChild(av);
   wrap.appendChild(bub);
-  chatEl.insertBefore(wrap, typingEl);
+  messagesEl.appendChild(wrap);
   scrollDown();
 }
 
@@ -651,7 +791,7 @@ function addAlertBubble(question) {
   bub.innerHTML = `<div class="alert-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Information non disponible</div>Cette information n'est pas présente dans ma base de données — merci de vous référer à l'équipe du bureau.`;
   wrap.appendChild(av);
   wrap.appendChild(bub);
-  chatEl.insertBefore(wrap, typingEl);
+  messagesEl.appendChild(wrap);
   scrollDown();
 }
 
@@ -659,7 +799,7 @@ function showError(msg) {
   const div = document.createElement('div');
   div.className = 'error-msg';
   div.textContent = msg;
-  chatEl.insertBefore(div, typingEl);
+  messagesEl.appendChild(div);
   scrollDown();
   setTimeout(() => div.remove(), 6000);
 }
@@ -774,45 +914,7 @@ function closeAnnuaire() {
   document.getElementById('annPanel').classList.remove('open');
   document.getElementById('annOverlay').classList.remove('open');
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAnnuaire(); });
-
-// ── Rebuild base documentaire ─────────────────────────────
-async function rebuildBase() {
-  const btn = document.getElementById('rebuildBtn');
-  btn.textContent = '⏳ Reconstruction…';
-  btn.disabled = true;
-  try {
-    const r = await fetch('/api/rebuild', { method: 'POST' });
-    const d = await r.json();
-    btn.textContent = d.ok ? '✅ Base reconstruite !' : '❌ Erreur';
-    setTimeout(() => { btn.textContent = '🔄 Reconstruire la base'; btn.disabled = false; }, 3000);
-  } catch {
-    btn.textContent = '❌ Serveur non joignable';
-    setTimeout(() => { btn.textContent = '🔄 Reconstruire la base'; btn.disabled = false; }, 3000);
-  }
-}
-// ────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAnnuaire(); closeCategory(); } });
 </script>
-
-<style>
-#adminBar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--navy); padding: 6px 16px;
-  display: flex; align-items: center; gap: 12px; z-index: 100;
-  font-size: 12px; color: rgba(255,255,255,0.5);
-}
-#rebuildBtn {
-  background: var(--gold); color: #fff; border: none;
-  padding: 4px 14px; border-radius: 6px; cursor: pointer;
-  font-size: 12px; font-family: inherit;
-}
-#rebuildBtn:disabled { opacity: 0.6; cursor: wait; }
-</style>
-
-<div id="adminBar">
-  <span>Administration</span>
-  <button id="rebuildBtn" onclick="rebuildBase()">🔄 Reconstruire la base</button>
-  <span style="margin-left:auto; opacity:0.4;">AUREL'IA — Réseau local</span>
-</div>
 </body>
 </html>

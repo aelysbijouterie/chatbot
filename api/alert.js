@@ -1,3 +1,5 @@
+const { getMagasin, getMagasinNom } = require('../lib/stores.js');
+
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -9,6 +11,10 @@ module.exports = async function(req, res) {
   try {
     const { question, date } = req.body;
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
+    const magasinCode = getMagasin(req);
+    const magasinNom = magasinCode ? getMagasinNom(magasinCode) : null;
+    const magasinLabel = magasinNom ? `${magasinNom} (${magasinCode})` : (magasinCode || 'Magasin inconnu');
 
     if (!RESEND_API_KEY) {
       console.warn('RESEND_API_KEY non configurée — alerte email désactivée');
@@ -22,9 +28,9 @@ module.exports = async function(req, res) {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'AUREL'IA <onboarding@resend.dev>',
+        from: "AUREL'IA <onboarding@resend.dev>",
         to: ['manon.mignot@aelys.fr'],
-        subject: '⚠️ AUREL'IA — Question hors base documentaire',
+        subject: `⚠️ AUREL'IA — Question hors base [${magasinLabel}]`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#F5F1EE;">
             <div style="background:#112033;padding:20px 24px;border-radius:12px 12px 0 0;">
@@ -36,10 +42,11 @@ module.exports = async function(req, res) {
               <p style="color:#555;font-size:14px;margin:0 0 20px;line-height:1.6;">
                 Une question posée à AUREL'IA n'a pas pu être répondue depuis la base documentaire. La personne a été invitée à contacter l'équipe du bureau.
               </p>
-              <div style="background:#FFF7F0;border-left:4px solid #A87B27;padding:14px 16px;border-radius:6px;margin-bottom:20px;">
+              <div style="background:#FFF7F0;border-left:4px solid #A87B27;padding:14px 16px;border-radius:6px;margin-bottom:12px;">
                 <p style="font-weight:600;color:#112033;margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Question posée :</p>
                 <p style="color:#333;margin:0;font-size:15px;font-style:italic;">"${question}"</p>
               </div>
+              <p style="color:#112033;font-size:13px;margin:0 0 6px;"><strong>Magasin :</strong> ${magasinLabel}</p>
               <p style="color:#999;font-size:12px;margin:0;">Le ${date}</p>
             </div>
           </div>

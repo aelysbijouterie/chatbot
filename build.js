@@ -140,4 +140,16 @@ async function readPdfsRecursive(dir, base = '') {
   fs.writeFileSync(OUT_FILE, JSON.stringify(docs, null, 2), 'utf8');
   console.log(`\n✓ kb.json : ${filteredMd.length} MD + ${pdfDocs.length} PDF = ${docs.length} docs total\n`);
   docs.forEach(d => console.log(`  [${d.categorie}] ${d.titre} (${d.type})${d.pdfUrl ? ' 📄' : ''}`));
+
+  // ── Index public léger (id, titre, catégorie) ──────────────────────────
+  // Utilisé par l'écran d'accueil du site pour lister les fiches par
+  // catégorie, sans exposer le contenu complet des procédures.
+  const DOCS_INDEX_FILE = path.join(__dirname, 'docs-index.json');
+  const docsIndex = docs.map(d => ({
+    id: d.id,
+    titre: d.titre,
+    categorie: d.categorie
+  }));
+  fs.writeFileSync(DOCS_INDEX_FILE, JSON.stringify(docsIndex, null, 2), 'utf8');
+  console.log(`✓ docs-index.json : ${docsIndex.length} fiches indexées\n`);
 })();
