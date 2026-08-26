@@ -126,9 +126,18 @@
     const errorEl = document.getElementById('loginError');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Si une session valide existe déjà, retour direct à l'appli.
+    // Si on arrive ici via un lien direct vers une fiche (ex: alerte email),
+    // ?next= indique où revenir une fois connecté.
+    function nextUrl() {
+      const raw = new URLSearchParams(window.location.search).get('next');
+      // Sécurité minimale : uniquement un chemin relatif interne, jamais une URL externe.
+      if (raw && raw.startsWith('/') && !raw.startsWith('//')) return raw;
+      return '/';
+    }
+
+    // Si une session valide existe déjà, retour direct à l'appli (ou à la fiche visée).
     fetch('/api/whoami').then(r => r.json()).then(data => {
-      if (data.magasin) window.location.href = '/';
+      if (data.magasin) window.location.href = nextUrl();
     }).catch(() => {});
 
     form.addEventListener('submit', async (e) => {
@@ -149,7 +158,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          window.location.href = '/';
+          window.location.href = nextUrl();
         } else {
           errorEl.textContent = data.error || 'Identifiant ou mot de passe incorrect.';
           errorEl.classList.add('visible');

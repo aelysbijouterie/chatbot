@@ -46,6 +46,76 @@ function categorieFromDir(relDir) {
   return relDir.split('/').pop().replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// ── Alerte "nouvelle procédure" ────────────────────────────────────────────
+// Envoyée à tous les magasins quand un déploiement en production ajoute au
+// moins une fiche par rapport au docs-index.json précédemment commité.
+async function notifyStoresOfNewDocs(newDocs) {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.warn('⚠ RESEND_API_KEY non configurée — alerte "nouvelle procédure" non envoyée.');
+    return;
+  }
+
+  let STORE_EMAILS;
+  try {
+    ({ STORE_EMAILS } = require('./lib/store-emails.js'));
+  } catch (e) {
+    console.warn('⚠ lib/store-emails.js introuvable — alerte non envoyée.');
+    return;
+  }
+
+  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+  if (!baseUrl) {
+    console.warn('⚠ URL de production introuvable — alerte "nouvelle procédure" non envoyée.');
+    return;
+  }
+
+  // Adresse d'envoi : tant qu'aucun domaine n'est vérifié dans Resend, le
+  // sandbox onboarding@resend.dev ne peut envoyer qu'à l'adresse du compte
+  // Resend lui-même — pas aux 23 magasins. Une fois un domaine vérifié
+  // (gratuit, voir GUIDE-ADMIN.md), définir RESEND_FROM_ADDRESS dans Vercel.
+  const fromAddress = process.env.RESEND_FROM_ADDRESS || "AUREL'IA <onboarding@resend.dev>";
+
+  const plural = newDocs.length > 1 ? 's' : '';
+  const subject = `AUREL'IA — ${newDocs.length} nouvelle${plural} procédure${plural} disponible${plural}`;
+  const listHtml = newDocs.map(d => `
+    <li style="margin-bottom:10px;">
+      <a href="${baseUrl}/api/pdf?id=${encodeURIComponent(d.id)}" style="color:#A87B27;font-weight:600;text-decoration:none;">${d.titre}</a>
+      <span style="color:#999;font-size:12px;"> — ${d.categorie}</span>
+    </li>`).join('');
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#F5F1EE;">
+      <div style="background:#112033;padding:20px 24px;border-radius:12px 12px 0 0;">
+        <h1 style="color:#A87B27;font-size:20px;margin:0;letter-spacing:1px;">AUREL'IA</h1>
+        <p style="color:#EFE8E0;font-size:12px;margin:4px 0 0;opacity:0.8;">Assistante Aélys Nouvelle-Aquitaine</p>
+      </div>
+      <div style="background:#fff;padding:24px;border-radius:0 0 12px 12px;border:1px solid #EFE8E0;">
+        <h2 style="color:#112033;font-size:16px;margin:0 0 14px;">${newDocs.length} nouvelle${plural} procédure${plural} ${newDocs.length > 1 ? 'sont disponibles' : 'est disponible'} dans AUREL'IA</h2>
+        <ul style="list-style:none;padding:0;margin:0 0 16px;">${listHtml}</ul>
+        <p style="color:#999;font-size:12px;margin:0;">Cliquez sur une fiche pour l'ouvrir (connexion magasin demandée si besoin).</p>
+      </div>
+    </div>`;
+
+  const entries = Object.entries(STORE_EMAILS);
+  let sent = 0, failed = 0;
+  for (const [code, email] of entries) {
+    try {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+        body: JSON.stringify({ from: fromAddress, to: [email], subject, html })
+      });
+      if (r.ok) sent++; else { failed++; console.warn(`  ✗ magasin ${code} (${email}) : HTTP ${r.status}`); }
+    } catch (e) {
+      failed++;
+      console.warn(`  ✗ magasin ${code} (${email}) : ${e.message}`);
+    }
+  }
+  console.log(`✓ Alerte "nouvelle procédure" : ${sent} envoyé(s), ${failed} échec(s) sur ${entries.length} magasins.`);
+}
+
 // ── Lecture des .md existants ─────────────────────────────────────────────────
 function readDocsRecursive(dir, base = '') {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -145,6 +215,17 @@ async function readPdfsRecursive(dir, base = '') {
   // Utilisé par l'écran d'accueil du site pour lister les fiches par
   // catégorie, sans exposer le contenu complet des procédures.
   const DOCS_INDEX_FILE = path.join(__dirname, 'docs-index.json');
+
+  // On lit l'index précédemment commité AVANT de le remplacer, pour savoir
+  // quelles fiches sont nouvelles depuis le dernier déploiement.
+  let previousIds = null;
+  try {
+    const prev = JSON.parse(fs.readFileSync(DOCS_INDEX_FILE, 'utf8'));
+    previousIds = new Set(prev.map(d => d.id));
+  } catch (e) {
+    previousIds = null; // pas d'index précédent (premier build) : pas d'alerte
+  }
+
   const docsIndex = docs.map(d => ({
     id: d.id,
     titre: d.titre,
@@ -152,4 +233,20 @@ async function readPdfsRecursive(dir, base = '') {
   }));
   fs.writeFileSync(DOCS_INDEX_FILE, JSON.stringify(docsIndex, null, 2), 'utf8');
   console.log(`✓ docs-index.json : ${docsIndex.length} fiches indexées\n`);
+
+  // ── Alerte email "nouvelle procédure" ───────────────────────────────────
+  if (previousIds) {
+    const newDocs = docsIndex.filter(d => !previousIds.has(d.id));
+    const NEW_DOCS_ALERT_CAP = 15; // au-delà, probable réorganisation de dossiers plutôt que du vrai contenu neuf
+    if (newDocs.length > NEW_DOCS_ALERT_CAP) {
+      console.log(`ℹ ${newDocs.length} fiches détectées comme "nouvelles" — probablement un renommage/réorganisation plutôt que du contenu neuf. Alerte non envoyée automatiquement (seuil : ${NEW_DOCS_ALERT_CAP}).`);
+    } else if (newDocs.length > 0) {
+      if (process.env.VERCEL_ENV === 'production') {
+        console.log(`\n📣 ${newDocs.length} nouvelle(s) fiche(s) détectée(s) — envoi de l'alerte aux magasins…`);
+        await notifyStoresOfNewDocs(newDocs);
+      } else {
+        console.log(`ℹ ${newDocs.length} nouvelle(s) fiche(s) détectée(s) — alerte non envoyée (build hors production, VERCEL_ENV=${process.env.VERCEL_ENV || 'non défini'}).`);
+      }
+    }
+  }
 })();

@@ -308,7 +308,14 @@ const { getMagasin } = require('./../lib/stores.js');
 
 module.exports = async function(req, res) {
   try {
-    if (!getMagasin(req)) return res.status(401).send('Non authentifié');
+    if (!getMagasin(req)) {
+      // Permet aux liens directs (ex: alerte email "nouvelle procédure") de
+      // fonctionner même si le magasin n'est pas encore connecté sur cet appareil :
+      // on renvoie vers la connexion, avec retour automatique sur la fiche demandée.
+      const next = encodeURIComponent(req.url || '/');
+      res.writeHead(302, { Location: `/login.html?next=${next}` });
+      return res.end();
+    }
 
     const id = (req.query && req.query.id) || '';
     if (!id) return res.status(400).send('Paramètre id manquant');
