@@ -1,25 +1,122 @@
 [
-  { "code": "200", "nom": "Aélys Pau Est", "email": "pau-est@aelys.fr" },
-  { "code": "300", "nom": "Aélys Montauban Nord", "email": "montauban-nord@aelys.fr" },
-  { "code": "302", "nom": "Aélys Castres", "email": "castres@aelys.fr" },
-  { "code": "303", "nom": "Aélys Saint-André", "email": "st-andre@aelys.fr" },
-  { "code": "304", "nom": "Aélys Marsac", "email": "marsac@aelys.fr" },
-  { "code": "305", "nom": "Aélys Ibos", "email": "ibos@aelys.fr" },
-  { "code": "306", "nom": "Aélys Boé", "email": "boe@aelys.fr" },
-  { "code": "309", "nom": "Aélys Bouliac", "email": "bouliac@aelys.fr" },
-  { "code": "310", "nom": "Aélys Lescar", "email": "lescar@aelys.fr" },
-  { "code": "312", "nom": "Aélys Dax", "email": "dax@aelys.fr" },
-  { "code": "313", "nom": "Aélys Le Pian Médoc", "email": "lepian@aelys.fr" },
-  { "code": "401", "nom": "Aélys Tinqueux", "email": "reims.tinqueux@aelys.fr" },
-  { "code": "402", "nom": "Aélys Nemours", "email": "nemours@aelys.fr" },
-  { "code": "404", "nom": "Aélys Longeville Les Saint Avold", "email": "saint-avold@aelys.fr" },
-  { "code": "408", "nom": "Aélys Alès", "email": "ales@aelys.fr" },
-  { "code": "409", "nom": "Aélys Villers Semeuse", "email": "villers-semeuse@aelys.fr" },
-  { "code": "411", "nom": "Aélys Cherbourg", "email": "cherbourg.glacerie@aelys.fr" },
-  { "code": "413", "nom": "Aélys Vitrolles", "email": "vitrolles@aelys.fr" },
-  { "code": "414", "nom": "Aélys Saint Nazaire", "email": "saint.nazaire@aelys.fr" },
-  { "code": "420", "nom": "Aélys Colmar", "email": "colmar@aelys.fr" },
-  { "code": "421", "nom": "Aélys Cabriès", "email": "cabries@aelys.fr" },
-  { "code": "422", "nom": "Aélys La Valette du Var", "email": "toulon.lavalette@aelys.fr" },
-  { "code": "423", "nom": "Aélys Collégien", "email": "torcy@aelys.fr" }
+  {
+    "code": "200",
+    "nom": "Aélys Pau Est",
+    "email": "pau-est@aelys.fr"
+  },
+  {
+    "code": "300",
+    "nom": "Aélys Montauban Nord",
+    "email": "montauban-nord@aelys.fr"
+  },
+  {
+    "code": "302",
+    "nom": "Aélys Castres",
+    "email": "castres@aelys.fr"
+  },
+  {
+    "code": "303",
+    "nom": "Aélys Saint-André",
+    "email": "st-andre@aelys.fr"
+  },
+  {
+    "code": "304",
+    "nom": "Aélys Marsac",
+    "email": "marsac@aelys.fr"
+  },
+  {
+    "code": "305",
+    "nom": "Aélys Ibos",
+    "email": "ibos@aelys.fr"
+  },
+  {
+    "code": "306",
+    "nom": "Aélys Boé",
+    "email": "boe@aelys.fr"
+  },
+  {
+    "code": "309",
+    "nom": "Aélys Bouliac",
+    "email": "bouliac@aelys.fr"
+  },
+  {
+    "code": "310",
+    "nom": "Aélys Lescar",
+    "email": "lescar@aelys.fr"
+  },
+  {
+    "code": "312",
+    "nom": "Aélys Dax",
+    "email": "dax@aelys.fr"
+  },
+  {
+    "code": "313",
+    "nom": "Aélys Le Pian Médoc",
+    "email": "lepian@aelys.fr"
+  },
+  {
+    "code": "401",
+    "nom": "Aélys Tinqueux",
+    "email": "reims.tinqueux@aelys.fr"
+  },
+  {
+    "code": "402",
+    "nom": "Aélys Nemours",
+    "email": "nemours@aelys.fr"
+  },
+  {
+    "code": "404",
+    "nom": "Aélys Longeville Les Saint Avold",
+    "email": "saint-avold@aelys.fr"
+  },
+  {
+    "code": "408",
+    "nom": "Aélys Alès",
+    "email": "ales@aelys.fr"
+  },
+  {
+    "code": "409",
+    "nom": "Aélys Villers Semeuse",
+    "email": "villers-semeuse@aelys.fr"
+  },
+  {
+    "code": "411",
+    "nom": "Aélys Cherbourg",
+    "email": "cherbourg.glacerie@aelys.fr"
+  },
+  {
+    "code": "413",
+    "nom": "Aélys Vitrolles",
+    "email": "vitrolles@aelys.fr"
+  },
+  {
+    "code": "414",
+    "nom": "Aélys Saint Nazaire",
+    "email": "saint.nazaire@aelys.fr"
+  },
+  {
+    "code": "420",
+    "nom": "Aélys Colmar",
+    "email": "colmar@aelys.fr"
+  },
+  {
+    "code": "421",
+    "nom": "Aélys Cabriès",
+    "email": "cabries@aelys.fr"
+  },
+  {
+    "code": "422",
+    "nom": "Aélys La Valette du Var",
+    "email": "toulon.lavalette@aelys.fr"
+  },
+  {
+    "code": "423",
+    "nom": "Aélys Collégien",
+    "email": "torcy@aelys.fr"
+  },
+  {
+    "code": "999",
+    "nom": "Aélys Test",
+    "email": "test@aelys.fr"
+  }
 ]
