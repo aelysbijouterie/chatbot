@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — AUREL'IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream:        #F5F1EE;
+    --sand:         #EFE8E0;
+    --white:        #FFFFFF;
+    --navy:         #112033;
+    --navy-soft:    #1e3a5f;
+    --gold:         #A87B27;
+    --gold-light:   #C9A04A;
+    --text:         #1C1C1C;
+    --text-muted:   #7A7068;
+    --alert:        #B94040;
+    --success:      #2E7D32;
+    --success-bg:   rgba(46,125,50,0.08);
+    --line:         rgba(168,123,39,0.16);
+    --line-soft:    rgba(168,123,39,0.10);
+    --surface:      #FFFFFF;
+    --sidebar-bg:   #EFE8E0;
+    --shadow-sm:    0 2px 8px rgba(17,32,51,0.06);
+    --shadow-md:    0 8px 28px rgba(17,32,51,0.10);
+    --shadow-lg:    0 16px 44px rgba(17,32,51,0.16);
+    --hover-overlay:rgba(255,255,255,0.55);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --hover-overlay: rgba(255,255,255,0.06);
+      --cream:      #171310;
+      --sand:       #1E1912;
+      --white:      #221C16;
+      --navy:       #F5F1EE;
+      --navy-soft:  #EFE8E0;
+      --gold:       #D4A44C;
+      --gold-light: #E4C079;
+      --text:       #EEE7DD;
+      --text-muted: #A79A89;
+      --alert:      #E27979;
+      --success:    #6FCF7C;
+      --success-bg: rgba(111,207,124,0.10);
+      --line:       rgba(212,164,76,0.22);
+      --line-soft:  rgba(212,164,76,0.14);
+      --surface:    #221C16;
+      --sidebar-bg: #1E1912;
+      --shadow-sm:  0 2px 8px rgba(0,0,0,0.28);
+      --shadow-md:  0 8px 28px rgba(0,0,0,0.34);
+      --shadow-lg:  0 16px 44px rgba(0,0,0,0.44);
+    }
+  }
+  :root[data-theme="dark"] {
+    --hover-overlay: rgba(255,255,255,0.06);
+    --cream:      #171310;
+    --sand:       #1E1912;
+    --white:      #221C16;
+    --navy:       #F5F1EE;
+    --navy-soft:  #EFE8E0;
+    --gold:       #D4A44C;
+    --gold-light: #E4C079;
+    --text:       #EEE7DD;
+    --text-muted: #A79A89;
+    --alert:      #E27979;
+    --success:    #6FCF7C;
+    --success-bg: rgba(111,207,124,0.10);
+    --line:       rgba(212,164,76,0.22);
+    --line-soft:  rgba(212,164,76,0.14);
+    --surface:    #221C16;
+    --sidebar-bg: #1E1912;
+    --shadow-sm:  0 2px 8px rgba(0,0,0,0.28);
+    --shadow-md:  0 8px 28px rgba(0,0,0,0.34);
+    --shadow-lg:  0 16px 44px rgba(0,0,0,0.44);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { color-scheme: light dark; }
+  body {
+    font-family:'DM Sans',Arial,sans-serif;
+    background:var(--cream); color:var(--text);
+    min-height:100vh; display:flex;
+  }
+  ::selection { background:rgba(168,123,39,0.25); }
+  button { font-family:inherit; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+
+  /* ── Bandeau statut ────────────────────────────────────────────── */
+  .status-banner {
+    position:fixed; top:0; left:0; right:0; z-index:200;
+    background:var(--navy); color:var(--sand);
+    font-size:0.72rem; letter-spacing:0.3px;
+    padding:7px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .status-banner b { color:var(--gold-light); }
+  .status-banner .logout-btn {
+    background:none; border:1px solid rgba(239,232,224,0.3); color:var(--sand);
+    font-size:0.68rem; padding:3px 10px; border-radius:100px; cursor:pointer;
+    transition:background 0.15s;
+  }
+  .status-banner .logout-btn:hover { background:rgba(255,255,255,0.1); }
+
+  /* ── Layout ────────────────────────────────────────────────────── */
+  .shell { display:flex; width:100%; padding-top:32px; min-height:100vh; }
+
+  .sidebar {
+    width:236px; flex-shrink:0;
+    background:var(--sidebar-bg);
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column;
+    padding:22px 16px;
+    position:sticky; top:32px; height:calc(100vh - 32px);
+  }
+  .brand { display:flex; align-items:center; gap:10px; padding:4px 8px 22px; }
+  .brand-mark {
+    width:34px; height:34px; border-radius:10px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-soft) 100%);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 3px 10px rgba(17,32,51,0.22);
+    font-size:0.95rem;
+  }
+  .brand-text .t1 { font-family:'Playfair Display',Georgia,serif; font-weight:600; font-size:1rem; color:var(--navy); line-height:1.15; }
+  .brand-text .t2 { font-size:0.66rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; margin-top:1px; }
+
+  .nav-group { margin-top:6px; }
+  .nav-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); padding:0 10px; margin-bottom:6px; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    width:100%; padding:9px 10px; margin-bottom:2px;
+    border-radius:9px; border:none; background:transparent;
+    font-size:0.85rem; font-weight:500; color:var(--text);
+    text-align:left; cursor:pointer; transition:background 0.15s, color 0.15s;
+  }
+  .nav-item .ic { width:18px; text-align:center; flex-shrink:0; font-size:0.9rem; }
+  .nav-item:hover { background:var(--hover-overlay); }
+  .nav-item.active { background:var(--navy); color:var(--sand); box-shadow:var(--shadow-sm); }
+  .nav-item.active .ic { filter:none; }
+  .nav-count { margin-left:auto; font-size:0.68rem; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+  .nav-item.active .nav-count { color:var(--sand); opacity:0.75; }
+  .nav-item.soon { opacity:0.5; cursor:default; }
+  .nav-item.soon:hover { background:transparent; }
+  .nav-soon-tag { margin-left:auto; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.4px; background:var(--line-soft); color:var(--gold); padding:2px 6px; border-radius:100px; }
+
+  .sidebar-spacer { flex:1; }
+  .sidebar-foot { border-top:1px solid var(--line); padding-top:14px; }
+  .back-link {
+    display:flex; align-items:center; gap:8px;
+    font-size:0.78rem; color:var(--text-muted); text-decoration:none;
+    padding:8px 10px; border-radius:8px; transition:background 0.15s, color 0.15s;
+    background:transparent; border:none; width:100%; cursor:pointer; text-align:left;
+  }
+  .back-link:hover { background:var(--hover-overlay); color:var(--navy); }
+
+  .main { flex:1; min-width:0; padding:34px 40px 60px; max-width:1180px; }
+
+  .view { display:none; }
+  .view.active { display:block; animation:fadeIn 0.22s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+  /* ── En-têtes de vue ───────────────────────────────────────────── */
+  .view-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:22px; flex-wrap:wrap; }
+  .view-head h1 { font-family:'Playfair Display',Georgia,serif; font-weight:600; font-size:1.7rem; color:var(--navy); text-wrap:balance; }
+  .view-sub { font-size:0.82rem; color:var(--text-muted); margin-top:5px; }
+  .view-sub b { color:var(--text); font-weight:600; font-variant-numeric:tabular-nums; }
+
+  .btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 18px; border-radius:11px; border:none; cursor:pointer;
+    font-size:0.84rem; font-weight:600; letter-spacing:0.2px;
+    transition:transform 0.15s, box-shadow 0.15s, opacity 0.15s, background 0.15s;
+    white-space:nowrap;
+  }
+  .btn-primary { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-soft) 100%); color:var(--sand); box-shadow:0 4px 14px rgba(17,32,51,0.22); }
+  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(17,32,51,0.3); }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+  .btn-ghost { background:var(--white); color:var(--navy); border:1px solid var(--line); }
+  .btn-ghost:hover { border-color:var(--gold); }
+  .btn-sm { padding:6px 12px; font-size:0.74rem; border-radius:8px; }
+
+  /* ── Bibliothèque : recherche + filtres ───────────────────────── */
+  .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  .search-wrap { position:relative; flex:1; min-width:220px; max-width:360px; }
+  .search-wrap input {
+    width:100%; padding:10px 14px 10px 36px; border-radius:11px;
+    border:1.5px solid var(--line); background:var(--white); color:var(--text);
+    font-size:0.85rem; outline:none; transition:border-color 0.15s;
+  }
+  .search-wrap input:focus { border-color:var(--gold); }
+  .search-wrap .ic { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem; pointer-events:none; }
+
+  .theme-chips { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:22px; }
+  .chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 13px; border-radius:100px; border:1.5px solid var(--line);
+    background:var(--white); color:var(--text-muted); font-size:0.78rem; font-weight:500;
+    cursor:pointer; transition:all 0.15s; white-space:nowrap;
+  }
+  .chip:hover { border-color:var(--gold); color:var(--navy); }
+  .chip.active { background:var(--navy); border-color:var(--navy); color:var(--sand); }
+  .chip .n { font-variant-numeric:tabular-nums; opacity:0.7; font-size:0.72rem; }
+
+  /* ── Grille de fiches ──────────────────────────────────────────── */
+  .doc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(258px,1fr)); gap:12px; }
+  .doc-card {
+    background:var(--white); border:1px solid var(--line); border-radius:14px;
+    padding:15px 16px; box-shadow:var(--shadow-sm); position:relative;
+    transition:box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+    display:block; text-decoration:none; color:inherit;
+  }
+  .doc-card.clickable { cursor:pointer; }
+  .doc-card.clickable:hover { border-color:var(--gold); box-shadow:var(--shadow-md); transform:translateY(-1px); }
+  .doc-card.is-new::before {
+    content:'Nouveau (aperçu)'; position:absolute; top:-8px; right:12px;
+    background:var(--gold); color:#fff; font-size:0.6rem; font-weight:700;
+    letter-spacing:0.5px; text-transform:uppercase; padding:3px 9px; border-radius:100px;
+    box-shadow:0 3px 8px rgba(168,123,39,0.35);
+    animation:popIn 0.3s ease;
+  }
+  @keyframes popIn { from{transform:scale(0.6);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .doc-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:9px; }
+  .doc-src {
+    width:26px; height:26px; border-radius:8px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:0.72rem;
+    background:var(--sand); color:var(--gold);
+  }
+  .doc-title { font-size:0.86rem; font-weight:600; color:var(--navy); line-height:1.35; margin-bottom:8px; min-height:2.4em; }
+  .doc-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .doc-tag {
+    font-size:0.66rem; font-weight:600; color:var(--gold); background:var(--line-soft);
+    padding:3px 9px; border-radius:100px; text-transform:uppercase; letter-spacing:0.3px;
+  }
+  .doc-date { font-size:0.68rem; color:var(--text-muted); }
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); font-size:0.85rem; }
+
+  /* ── Vue Ajouter : layout deux colonnes ──────────────────────────*/
+  .add-layout { display:grid; grid-template-columns:1fr 300px; gap:24px; align-items:start; }
+  @media (max-width: 880px) { .add-layout { grid-template-columns:1fr; } }
+
+  .card-block {
+    background:var(--white); border:1px solid var(--line); border-radius:16px;
+    padding:22px 24px; box-shadow:var(--shadow-sm); margin-bottom:18px;
+  }
+  .block-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--gold); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+  .block-label .num { width:18px; height:18px; border-radius:50%; background:var(--gold); color:#fff; font-size:0.62rem; display:flex; align-items:center; justify-content:center; font-weight:700; }
+
+  .method-toggle { display:flex; gap:10px; margin-bottom:4px; }
+  .method-btn {
+    flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:6px;
+    padding:14px 16px; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--white); cursor:pointer; transition:all 0.15s; text-align:left;
+  }
+  .method-btn .m-ic { font-size:1.15rem; }
+  .method-btn .m-title { font-size:0.83rem; font-weight:600; color:var(--navy); }
+  .method-btn .m-sub { font-size:0.7rem; color:var(--text-muted); }
+  .method-btn:hover { border-color:var(--gold); }
+  .method-btn.active { border-color:var(--gold); background:var(--line-soft); box-shadow:0 0 0 3px rgba(168,123,39,0.08); }
+
+  .method-panel { display:none; margin-top:16px; }
+  .method-panel.active { display:block; animation:fadeIn 0.18s ease; }
+
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:0.74rem; font-weight:600; color:var(--navy); margin-bottom:6px; }
+  .field input[type="text"], .field textarea {
+    width:100%; padding:11px 14px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--white); color:var(--text); font-family:inherit; font-size:0.86rem;
+    outline:none; transition:border-color 0.15s; resize:vertical;
+  }
+  .field input[type="text"]:focus, .field textarea:focus { border-color:var(--gold); }
+  .field textarea { min-height:170px; line-height:1.6; }
+  .char-count { text-align:right; font-size:0.68rem; color:var(--text-muted); margin-top:5px; font-variant-numeric:tabular-nums; }
+
+  .drop-zone {
+    border:1.5px dashed var(--line); border-radius:12px; padding:30px 20px;
+    text-align:center; cursor:pointer; transition:all 0.18s; background:var(--sand);
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color:var(--gold); background:var(--line-soft); }
+  .drop-zone .dz-ic { font-size:1.6rem; margin-bottom:8px; display:block; }
+  .drop-zone .dz-title { font-size:0.85rem; font-weight:600; color:var(--navy); margin-bottom:3px; }
+  .drop-zone .dz-sub { font-size:0.73rem; color:var(--text-muted); }
+  .fmt-badges { display:flex; gap:6px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+  .fmt-badge { font-size:0.64rem; font-weight:600; color:var(--text-muted); background:var(--white); border:1px solid var(--line); padding:3px 9px; border-radius:6px; }
+
+  .file-chip {
+    display:none; align-items:center; gap:11px; margin-top:14px;
+    padding:11px 14px; border-radius:11px; background:var(--sand); border:1px solid var(--line);
+  }
+  .file-chip.active { display:flex; animation:fadeIn 0.2s ease; }
+  .file-chip .fc-ic { width:32px; height:32px; border-radius:8px; background:var(--gold); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0; }
+  .file-chip .fc-info { flex:1; min-width:0; }
+  .file-chip .fc-name { font-size:0.8rem; font-weight:600; color:var(--navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .file-chip .fc-size { font-size:0.68rem; color:var(--text-muted); }
+  .file-chip .fc-remove { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:4px; line-height:1; }
+  .file-chip .fc-remove:hover { color:var(--alert); }
+  #fileInput { display:none; }
+
+  .theme-picker { display:flex; gap:8px; flex-wrap:wrap; }
+  .theme-chip {
+    display:inline-flex; align-items:center; gap:7px;
+    padding:8px 14px; border-radius:100px; border:1.5px solid var(--line);
+    background:var(--white); color:var(--text); font-size:0.8rem; font-weight:500;
+    cursor:pointer; transition:all 0.15s;
+  }
+  .theme-chip:hover { border-color:var(--gold); }
+  .theme-chip.selected { background:var(--gold); border-color:var(--gold); color:#fff; box-shadow:0 3px 10px rgba(168,123,39,0.3); }
+  .theme-chip.new-theme { border-style:dashed; color:var(--gold); }
+  .theme-chip.new-theme:hover { background:var(--line-soft); }
+
+  .new-theme-input { display:none; align-items:center; gap:6px; margin-top:10px; }
+  .new-theme-input.active { display:flex; animation:fadeIn 0.15s ease; }
+  .new-theme-input input {
+    padding:7px 12px; border-radius:100px; border:1.5px solid var(--gold);
+    font-size:0.78rem; outline:none; background:var(--white); color:var(--text); width:170px;
+  }
+  .nt-ok, .nt-cancel {
+    width:26px; height:26px; border-radius:50%; border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0;
+  }
+  .nt-ok { background:var(--success); color:#fff; }
+  .nt-cancel { background:var(--sand); color:var(--text-muted); }
+
+  /* ── Colonne aperçu ────────────────────────────────────────────── */
+  .preview-sticky { position:sticky; top:66px; }
+  .preview-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-muted); margin-bottom:10px; }
+  .preview-card {
+    background:var(--white); border-radius:16px; box-shadow:var(--shadow-md);
+    padding:20px; border:1px solid var(--line); min-height:220px;
+  }
+  .pv-eyebrow { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .pv-mark { width:14px; height:14px; border-radius:4px; background:var(--navy); flex-shrink:0; }
+  .pv-eyebrow span { font-size:0.66rem; font-weight:700; color:var(--gold); letter-spacing:0.6px; text-transform:uppercase; }
+  .pv-title { font-family:'Playfair Display',Georgia,serif; font-weight:600; font-size:1.05rem; color:var(--navy); line-height:1.3; margin-bottom:10px; text-wrap:balance; }
+  .pv-title.placeholder, .pv-body.placeholder { color:var(--text-muted); font-family:inherit; font-weight:400; font-style:italic; }
+  .pv-rule { height:1px; background:var(--line); margin:12px 0; }
+  .pv-body { font-size:0.76rem; color:var(--text); line-height:1.6; max-height:130px; overflow:hidden; position:relative; }
+  .pv-body.file-mode { display:flex; align-items:center; gap:10px; color:var(--text-muted); font-style:normal; }
+  .pv-file-ic { width:30px; height:30px; border-radius:8px; background:var(--line-soft); color:var(--gold); display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0; }
+
+  .publish-row { display:flex; align-items:center; gap:12px; margin-top:18px; }
+  .publish-hint { font-size:0.68rem; color:var(--text-muted); line-height:1.5; }
+  .publish-hint b { color:var(--navy); font-weight:600; }
+
+  /* ── Toast ─────────────────────────────────────────────────────── */
+  .toast {
+    position:fixed; bottom:24px; right:24px; z-index:300;
+    background:var(--navy); color:var(--sand); padding:14px 20px 14px 16px;
+    border-radius:13px; box-shadow:var(--shadow-lg);
+    display:flex; align-items:flex-start; gap:11px; max-width:340px;
+    transform:translateY(20px); opacity:0; pointer-events:none;
+    transition:transform 0.28s cubic-bezier(.2,.8,.2,1), opacity 0.28s;
+  }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast-ic { width:26px; height:26px; border-radius:50%; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0; }
+  .toast-title { font-size:0.82rem; font-weight:600; margin-bottom:3px; }
+  .toast-sub { font-size:0.72rem; color:var(--sand); opacity:0.8; line-height:1.45; }
+
+  ::-webkit-scrollbar { width:7px; height:7px; }
+  ::-webkit-scrollbar-thumb { background:rgba(168,123,39,0.25); border-radius:10px; }
+</style>
+</head>
+<body>
+
+<div class="status-banner">
+  <span>Connecté en administrateur — <b>la bibliothèque ci-dessous reflète la vraie base</b>, l'ajout de fiches est encore en aperçu (pas encore sauvegardé).</span>
+  <button class="logout-btn" onclick="logout()">Déconnexion</button>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" width="17" height="17" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4C2.9 2 2 2.9 2 4v13c0 1.1.9 2 2 2h3l3 3 3-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" stroke="#C9A04A" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="t1">AUREL'IA</div>
+        <div class="t2">Admin</div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Contenu</div>
+      <button class="nav-item active" data-view="library">
+        <span class="ic">📚</span> Bibliothèque <span class="nav-count" id="navLibCount">…</span>
+      </button>
+      <button class="nav-item" data-view="add">
+        <span class="ic">➕</span> Ajouter une procédure
+      </button>
+      <button class="nav-item soon" title="Bientôt disponible">
+        <span class="ic">🏪</span> Magasins <span class="nav-soon-tag">Bientôt</span>
+      </button>
+      <button class="nav-item soon" title="Bientôt disponible">
+        <span class="ic">📒</span> Annuaire <span class="nav-soon-tag">Bientôt</span>
+      </button>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-foot">
+      <a class="back-link" href="/">
+        <span class="ic">←</span> Espace magasin
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ═══════════════ VUE BIBLIOTHÈQUE ═══════════════ -->
+    <section class="view active" id="view-library">
+      <div class="view-head">
+        <div>
+          <h1>Bibliothèque des procédures</h1>
+          <div class="view-sub"><b id="libTotalCount">…</b> fiches · <b id="libThemeCount">…</b> thèmes</div>
+        </div>
+        <button class="btn btn-primary" onclick="goToAdd()">➕ Ajouter une procédure</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="ic">🔍</span>
+          <input type="text" id="searchInput" placeholder="Rechercher une fiche…" oninput="filterLibrary()" />
+        </div>
+      </div>
+
+      <div class="theme-chips" id="themeFilters"></div>
+
+      <div class="doc-grid" id="docGrid"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">Aucune fiche ne correspond à cette recherche.</div>
+    </section>
+
+    <!-- ═══════════════ VUE AJOUTER ═══════════════ -->
+    <section class="view" id="view-add">
+      <div class="view-head">
+        <div>
+          <h1>Ajouter une procédure</h1>
+          <div class="view-sub">Collez un texte ou importez un fichier, choisissez un thème, publiez.</div>
+        </div>
+        <button class="btn btn-ghost" onclick="goToLibrary()">📚 Voir la bibliothèque</button>
+      </div>
+
+      <div class="add-layout">
+        <div>
+          <!-- Bloc 1 : méthode -->
+          <div class="card-block">
+            <div class="block-label"><span class="num">1</span> Contenu de la fiche</div>
+
+            <div class="method-toggle">
+              <button class="method-btn active" id="methodBtnText" onclick="setMethod('text')">
+                <span class="m-ic">✍️</span>
+                <span class="m-title">Coller du texte</span>
+                <span class="m-sub">Rédiger ou coller directement</span>
+              </button>
+              <button class="method-btn" id="methodBtnFile" onclick="setMethod('file')">
+                <span class="m-ic">📎</span>
+                <span class="m-title">Importer un fichier</span>
+                <span class="m-sub">PDF, Word, Excel…</span>
+              </button>
+            </div>
+
+            <div class="method-panel active" id="panelText">
+              <div class="field" style="margin-top:16px;">
+                <label for="titleInputText">Titre de la fiche</label>
+                <input type="text" id="titleInputText" placeholder="ex. Commandes — Or avec remise" oninput="syncPreview()" />
+              </div>
+              <div class="field">
+                <label for="contentInput">Contenu</label>
+                <textarea id="contentInput" placeholder="Collez ou rédigez la procédure ici…" oninput="syncPreview()"></textarea>
+                <div class="char-count"><span id="charCount">0</span> caractères</div>
+              </div>
+            </div>
+
+            <div class="method-panel" id="panelFile">
+              <div class="field" style="margin-top:16px;">
+                <label for="titleInputFile">Titre de la fiche</label>
+                <input type="text" id="titleInputFile" placeholder="Rempli automatiquement depuis le fichier" oninput="syncPreview()" />
+              </div>
+              <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <span class="dz-ic">📤</span>
+                <div class="dz-title">Glissez un fichier ici, ou cliquez pour parcourir</div>
+                <div class="dz-sub">Le texte sera extrait automatiquement</div>
+                <div class="fmt-badges">
+                  <span class="fmt-badge">PDF</span>
+                  <span class="fmt-badge">Word (.docx)</span>
+                  <span class="fmt-badge">Excel (.xlsx)</span>
+                  <span class="fmt-badge">Image (.jpg/.png)</span>
+                </div>
+              </div>
+              <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
+              <div class="file-chip" id="fileChip">
+                <div class="fc-ic" id="fcIcon">📄</div>
+                <div class="fc-info">
+                  <div class="fc-name" id="fcName">—</div>
+                  <div class="fc-size" id="fcSize">—</div>
+                </div>
+                <button class="fc-remove" onclick="removeFile(event)">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloc 2 : thème -->
+          <div class="card-block">
+            <div class="block-label"><span class="num">2</span> Thème</div>
+            <div class="theme-picker" id="themePicker"></div>
+            <div class="new-theme-input" id="newThemeInput">
+              <input type="text" id="newThemeText" placeholder="Nom du nouveau thème" maxlength="28" />
+              <button class="nt-ok" onclick="confirmNewTheme()">✓</button>
+              <button class="nt-cancel" onclick="cancelNewTheme()">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne aperçu -->
+        <div class="preview-sticky">
+          <div class="preview-label">Aperçu</div>
+          <div class="preview-card">
+            <div class="pv-eyebrow">
+              <div class="pv-mark"></div>
+              <span>AUREL'IA · <span id="pvTheme">THÈME</span></span>
+            </div>
+            <div class="pv-title placeholder" id="pvTitle">Titre de la fiche…</div>
+            <div class="pv-rule"></div>
+            <div class="pv-body placeholder" id="pvBody">Le contenu apparaîtra ici au fur et à mesure.</div>
+          </div>
+
+          <div class="publish-row">
+            <button class="btn btn-primary" id="publishBtn" disabled onclick="publish()" style="width:100%; justify-content:center;">Publier la fiche</button>
+          </div>
+          <p class="publish-hint" style="margin-top:10px;">
+            <b>Pas encore branché</b> — publier ici l'affiche dans la liste pour validation, mais ne l'ajoute pas encore réellement à la base ni n'envoie l'alerte email. La connexion réelle (extraction du fichier + écriture en base) arrive dans la prochaine étape.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-ic">✓</div>
+  <div>
+    <div class="toast-title" id="toastTitle">Fiche ajoutée</div>
+    <div class="toast-sub" id="toastSub">Alerte envoyée à 1 destinataire (mode test).</div>
+  </div>
+</div>
+
+<script>
+  // ── Authentification ────────────────────────────────────────────
+  fetch('/api/whoami').then(r => r.json()).then(data => {
+    if (data.magasin !== 'ADMIN') window.location.href = '/admin-login.html';
+  }).catch(() => { window.location.href = '/admin-login.html'; });
+
+  async function logout() {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch(e) {}
+    window.location.href = '/admin-login.html';
+  }
+
+  // ── Thèmes prédéfinis (utilisés par le sélecteur de la vue Ajouter) ──
+  const THEMES = [
+    { key:'Commandes',     label:'Commandes',      icon:'🛒' },
+    { key:'Defectueux',    label:'Défectueux',     icon:'🔍' },
+    { key:'Sav',           label:'SAV',            icon:'🔧' },
+    { key:'Vente',         label:'Vente',          icon:'💬' },
+    { key:'References',    label:'Références',     icon:'💻' },
+    { key:'Formation',     label:'Formation',      icon:'🎓' },
+    { key:'Commandes Web', label:'Commandes Web',  icon:'📦' },
+    { key:'Inventaires',   label:'Inventaires',    icon:'📋' },
+  ];
+
+  let DOCS = [];
+  let activeFilter = 'Tous';
+  let selectedTheme = null;
+  let currentMethod = 'text';
+  let currentFile = null;
+
+  const themeMeta = k => THEMES.find(t => t.key === k) || { label:k, icon:'🏷️' };
+
+  // ── Chargement des vraies fiches (docs-index.json, généré par build.js) ──
+  async function loadLibrary() {
+    try {
+      const res = await fetch('/docs-index.json', { cache: 'no-store' });
+      const data = await res.json();
+      DOCS = data.map(d => ({ titre:d.titre, theme:d.categorie, id:d.id, isNew:false }));
+      // Thèmes présents en vrai mais absents de la liste prédéfinie : on les ajoute
+      // (avec une icône générique) pour que les filtres restent complets.
+      new Set(DOCS.map(d => d.theme)).forEach(t => {
+        if (!THEMES.some(x => x.key === t)) THEMES.push({ key:t, label:t, icon:'🏷️' });
+      });
+    } catch (e) {
+      DOCS = [];
+      document.getElementById('docGrid').innerHTML = '<div class="empty-state">Impossible de charger la bibliothèque pour le moment.</div>';
+    }
+    renderThemeFilters();
+    filterLibrary();
+    renderThemePicker();
+    updateCounts();
+  }
+
+  function updateCounts() {
+    document.getElementById('libTotalCount').textContent = DOCS.length;
+    document.getElementById('navLibCount').textContent = DOCS.length;
+    document.getElementById('libThemeCount').textContent = new Set(DOCS.map(d => d.theme)).size;
+  }
+
+  // ── Rendu Bibliothèque ─────────────────────────────────────────
+  function renderThemeFilters() {
+    const wrap = document.getElementById('themeFilters');
+    const counts = {};
+    DOCS.forEach(d => counts[d.theme] = (counts[d.theme]||0) + 1);
+    let html = `<button class="chip ${activeFilter==='Tous'?'active':''}" onclick="setFilter('Tous')">Tous <span class="n">${DOCS.length}</span></button>`;
+    THEMES.filter(t => counts[t.key]).forEach(t => {
+      html += `<button class="chip ${activeFilter===t.key?'active':''}" onclick="setFilter('${t.key}')">${t.icon} ${t.label} <span class="n">${counts[t.key]||0}</span></button>`;
+    });
+    wrap.innerHTML = html;
+  }
+
+  function setFilter(key) { activeFilter = key; renderThemeFilters(); filterLibrary(); }
+
+  function filterLibrary() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const grid = document.getElementById('docGrid');
+    let list = DOCS.slice().reverse(); // plus récentes d'abord
+    if (activeFilter !== 'Tous') list = list.filter(d => d.theme === activeFilter);
+    if (q) list = list.filter(d => d.titre.toLowerCase().includes(q));
+
+    document.getElementById('emptyState').style.display = list.length ? 'none' : 'block';
+    grid.innerHTML = list.map(d => {
+      const tag = `<span class="doc-tag">${themeMeta(d.theme).label}</span>`;
+      const inner = `
+        <div class="doc-card-top">
+          <div class="doc-src">📄</div>
+        </div>
+        <div class="doc-title">${d.titre}</div>
+        <div class="doc-meta">${tag}${d.isNew ? '<span class="doc-date">aperçu local</span>' : ''}</div>
+      `;
+      return d.id
+        ? `<a class="doc-card clickable ${d.isNew?'is-new':''}" href="/api/pdf?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Ouvrir la fiche PDF">${inner}</a>`
+        : `<div class="doc-card ${d.isNew?'is-new':''}">${inner}</div>`;
+    }).join('');
+  }
+
+  // ── Navigation ────────────────────────────────────────────────
+  function switchView(view) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    document.querySelectorAll('.nav-item[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  }
+  document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+  function goToAdd() { switchView('add'); }
+  function goToLibrary() { switchView('library'); }
+
+  // ── Ajouter : méthode texte / fichier ────────────────────────────
+  function setMethod(method) {
+    currentMethod = method;
+    document.getElementById('methodBtnText').classList.toggle('active', method === 'text');
+    document.getElementById('methodBtnFile').classList.toggle('active', method === 'file');
+    document.getElementById('panelText').classList.toggle('active', method === 'text');
+    document.getElementById('panelFile').classList.toggle('active', method === 'file');
+    syncPreview();
+  }
+
+  document.getElementById('contentInput').addEventListener('input', (e) => {
+    document.getElementById('charCount').textContent = e.target.value.length;
+  });
+
+  // ── Glisser-déposer / sélection de fichier ──────────────────────
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  ['dragenter','dragover'].forEach(evt => dropZone.addEventListener(evt, (e) => {
+    e.preventDefault(); dropZone.classList.add('drag-over');
+  }));
+  ['dragleave','drop'].forEach(evt => dropZone.addEventListener(evt, (e) => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+  }));
+  dropZone.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) handleFile(e.target.files[0]);
+  });
+
+  const EXT_ICON = { pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊', jpg:'🖼️', jpeg:'🖼️', png:'🖼️' };
+
+  function handleFile(file) {
+    currentFile = file;
+    const ext = file.name.split('.').pop().toLowerCase();
+    document.getElementById('fcIcon').textContent = EXT_ICON[ext] || '📎';
+    document.getElementById('fcName').textContent = file.name;
+    document.getElementById('fcSize').textContent = formatBytes(file.size);
+    document.getElementById('fileChip').classList.add('active');
+
+    const titleField = document.getElementById('titleInputFile');
+    if (!titleField.value) {
+      titleField.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ').trim();
+    }
+    syncPreview();
+  }
+
+  function removeFile(e) {
+    e.stopPropagation();
+    currentFile = null;
+    fileInput.value = '';
+    document.getElementById('fileChip').classList.remove('active');
+    syncPreview();
+  }
+
+  function formatBytes(n) {
+    if (n < 1024) return n + ' o';
+    if (n < 1024*1024) return (n/1024).toFixed(0) + ' Ko';
+    return (n/(1024*1024)).toFixed(1) + ' Mo';
+  }
+
+  // ── Thèmes ────────────────────────────────────────────────────
+  function renderThemePicker() {
+    const wrap = document.getElementById('themePicker');
+    wrap.innerHTML = THEMES.map(t => `
+      <button type="button" class="theme-chip ${selectedTheme===t.key?'selected':''}" onclick="selectTheme('${t.key}')">${t.icon} ${t.label}</button>
+    `).join('') + `<button type="button" class="theme-chip new-theme" onclick="openNewTheme()">+ Nouveau thème</button>`;
+  }
+  function selectTheme(key) { selectedTheme = key; renderThemePicker(); syncPreview(); }
+  function openNewTheme() {
+    document.getElementById('newThemeInput').classList.add('active');
+    document.getElementById('newThemeText').focus();
+  }
+  function cancelNewTheme() {
+    document.getElementById('newThemeInput').classList.remove('active');
+    document.getElementById('newThemeText').value = '';
+  }
+  function confirmNewTheme() {
+    const val = document.getElementById('newThemeText').value.trim();
+    if (!val) return;
+    const key = val;
+    if (!THEMES.some(t => t.key === key)) THEMES.push({ key, label:val, icon:'🏷️' });
+    selectedTheme = key;
+    cancelNewTheme();
+    renderThemePicker();
+    renderThemeFilters();
+    syncPreview();
+  }
+  document.getElementById('newThemeText').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); confirmNewTheme(); }
+    if (e.key === 'Escape') cancelNewTheme();
+  });
+
+  // ── Aperçu live ───────────────────────────────────────────────
+  function syncPreview() {
+    const title = currentMethod === 'text'
+      ? document.getElementById('titleInputText').value.trim()
+      : document.getElementById('titleInputFile').value.trim();
+
+    const pvTitle = document.getElementById('pvTitle');
+    pvTitle.textContent = title || 'Titre de la fiche…';
+    pvTitle.classList.toggle('placeholder', !title);
+
+    document.getElementById('pvTheme').textContent = selectedTheme ? themeMeta(selectedTheme).label.toUpperCase() : 'THÈME';
+
+    const pvBody = document.getElementById('pvBody');
+    if (currentMethod === 'file' && currentFile) {
+      pvBody.classList.add('file-mode');
+      pvBody.classList.remove('placeholder');
+      const ext = currentFile.name.split('.').pop().toLowerCase();
+      pvBody.innerHTML = `<span class="pv-file-ic">${EXT_ICON[ext] || '📎'}</span> Le contenu de <b>${currentFile.name}</b> sera extrait et affiché ici.`;
+    } else {
+      pvBody.classList.remove('file-mode');
+      const content = document.getElementById('contentInput').value.trim();
+      if (content) {
+        pvBody.classList.remove('placeholder');
+        pvBody.textContent = content.slice(0, 220) + (content.length > 220 ? '…' : '');
+      } else {
+        pvBody.classList.add('placeholder');
+        pvBody.textContent = 'Le contenu apparaîtra ici au fur et à mesure.';
+      }
+    }
+
+    checkPublishReady();
+  }
+  ['titleInputText','titleInputFile'].forEach(id => document.getElementById(id).addEventListener('input', syncPreview));
+
+  function checkPublishReady() {
+    const title = currentMethod === 'text'
+      ? document.getElementById('titleInputText').value.trim()
+      : document.getElementById('titleInputFile').value.trim();
+    const hasContent = currentMethod === 'text'
+      ? document.getElementById('contentInput').value.trim().length > 0
+      : !!currentFile;
+    document.getElementById('publishBtn').disabled = !(title && selectedTheme && hasContent);
+  }
+
+  // ── "Publication" (aperçu local uniquement — voir bandeau du haut) ──
+  function publish() {
+    const btn = document.getElementById('publishBtn');
+    btn.disabled = true;
+    btn.textContent = 'Publication…';
+
+    const title = currentMethod === 'text'
+      ? document.getElementById('titleInputText').value.trim()
+      : document.getElementById('titleInputFile').value.trim();
+
+    setTimeout(() => {
+      DOCS.forEach(d => d.isNew = false);
+      DOCS.push({ titre:title, theme:selectedTheme, id:null, isNew:true });
+
+      updateCounts();
+      showToast('Fiche affichée en aperçu', "Pas encore sauvegardée ni envoyée par email — la connexion à la vraie base arrive à l'étape suivante.");
+
+      resetAddForm();
+      setFilter('Tous');
+      switchView('library');
+    }, 650);
+  }
+
+  function resetAddForm() {
+    document.getElementById('titleInputText').value = '';
+    document.getElementById('titleInputFile').value = '';
+    document.getElementById('contentInput').value = '';
+    document.getElementById('charCount').textContent = '0';
+    removeFile({ stopPropagation(){} });
+    selectedTheme = null;
+    setMethod('text');
+    renderThemePicker();
+    syncPreview();
+    const btn = document.getElementById('publishBtn');
+    btn.textContent = 'Publier la fiche';
+  }
+
+  function showToast(title, sub) {
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastSub').textContent = sub;
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 5200);
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  loadLibrary();
+  syncPreview();
+</script>
+</body>
+</html>
