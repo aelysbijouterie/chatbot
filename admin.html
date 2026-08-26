@@ -419,12 +419,58 @@
     color:var(--text); font-size:0.76rem; line-height:1.5; padding:10px 14px; border-radius:10px; margin-bottom:16px;
   }
   .gh-warning.visible { display:block; }
+
+  /* ── Vue Statistiques ─────────────────────────────────────────── */
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:18px; }
+  .stat-tile {
+    background:var(--white); border:1px solid var(--line); border-radius:14px;
+    padding:16px 18px; box-shadow:var(--shadow-sm);
+  }
+  .stat-label { font-size:0.72rem; color:var(--text-muted); margin-bottom:6px; }
+  .stat-value { font-family:'Playfair Display',Georgia,serif; font-size:1.7rem; font-weight:600; color:var(--navy); line-height:1.15; }
+  .stat-value.sm { font-size:1.15rem; font-family:'DM Sans',sans-serif; font-weight:600; }
+
+  .stats-cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:880px) { .stats-cols { grid-template-columns:1fr; } }
+
+  .bar-chart {
+    display:flex; align-items:flex-end; gap:4px; height:120px;
+    padding-top:8px; border-bottom:1px solid var(--line); position:relative;
+  }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative; min-width:0; }
+  .bar-mark {
+    width:100%; max-width:24px; background:var(--gold); border-radius:4px 4px 0 0;
+    transition:opacity 0.15s; cursor:default; min-height:2px;
+  }
+  .bar-mark:hover, .bar-mark:focus { opacity:0.72; outline:none; }
+  .bar-date { font-size:0.6rem; color:var(--text-muted); margin-top:6px; white-space:nowrap; }
+  .bar-tooltip {
+    position:absolute; bottom:100%; left:50%; transform:translateX(-50%) translateY(-6px);
+    background:var(--navy); color:var(--sand); font-size:0.7rem; padding:5px 9px; border-radius:8px;
+    white-space:nowrap; box-shadow:var(--shadow-md); pointer-events:none;
+    opacity:0; transition:opacity 0.12s; z-index:5;
+  }
+  .bar-mark:hover + .bar-tooltip, .bar-mark:focus + .bar-tooltip { opacity:1; }
+  .bar-tooltip b { font-variant-numeric:tabular-nums; }
+
+  .rank-list { display:flex; flex-direction:column; gap:2px; }
+  .rank-row { display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid var(--line-soft); }
+  .rank-row:last-child { border-bottom:none; }
+  .rank-label { flex:1; min-width:0; font-size:0.82rem; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rank-bar-track { width:70px; height:6px; border-radius:100px; background:var(--sand); flex-shrink:0; overflow:hidden; }
+  .rank-bar-fill { height:100%; background:var(--gold); border-radius:100px; }
+  .rank-count { font-size:0.78rem; font-weight:600; color:var(--navy); font-variant-numeric:tabular-nums; width:34px; text-align:right; flex-shrink:0; }
+  .rank-action {
+    flex-shrink:0; background:none; border:1px solid var(--line); color:var(--text-muted);
+    font-size:0.68rem; padding:3px 9px; border-radius:100px; cursor:pointer; transition:all 0.15s;
+  }
+  .rank-action:hover { border-color:var(--gold); color:var(--navy); }
 </style>
 </head>
 <body>
 
 <div class="status-banner">
-  <span>Connecté en administrateur — <b>Bibliothèque, Magasins et Annuaire sont connectés à la vraie base</b>, l'ajout de fiches est encore en aperçu (pas encore sauvegardé).</span>
+  <span>Connecté en administrateur — <b>tout l'espace est connecté à la vraie base</b> (bibliothèque, ajout de fiches, magasins, annuaire, statistiques).</span>
   <button class="logout-btn" onclick="logout()">Déconnexion</button>
 </div>
 
@@ -455,6 +501,13 @@
       </button>
       <button class="nav-item" data-view="annuaire">
         <span class="ic">📒</span> Annuaire <span class="nav-count" id="navAnnCount">…</span>
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Analyse</div>
+      <button class="nav-item" data-view="stats">
+        <span class="ic">📊</span> Statistiques
       </button>
     </div>
 
@@ -546,10 +599,10 @@
                   <span class="fmt-badge">PDF</span>
                   <span class="fmt-badge">Word (.docx)</span>
                   <span class="fmt-badge">Excel (.xlsx)</span>
-                  <span class="fmt-badge">Image (.jpg/.png)</span>
                 </div>
+                <div class="dz-sub" style="margin-top:8px;">3 Mo maximum</div>
               </div>
-              <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
+              <input type="file" id="fileInput" accept=".pdf,.docx,.xlsx" />
               <div class="file-chip" id="fileChip">
                 <div class="fc-ic" id="fcIcon">📄</div>
                 <div class="fc-info">
@@ -590,8 +643,9 @@
             <button class="btn btn-primary" id="publishBtn" disabled onclick="publish()" style="width:100%; justify-content:center;">Publier la fiche</button>
           </div>
           <p class="publish-hint" style="margin-top:10px;">
-            <b>Pas encore branché</b> — publier ici l'affiche dans la liste pour validation, mais ne l'ajoute pas encore réellement à la base ni n'envoie l'alerte email. La connexion réelle (extraction du fichier + écriture en base) arrive dans la prochaine étape.
+            La fiche est enregistrée dans le dépôt puis <b>indexée automatiquement au prochain déploiement</b> (~1-2 min) — l'alerte email part à ce moment-là aux magasins, comme pour toute nouvelle procédure.
           </p>
+          <div class="form-error" id="publishError"></div>
         </div>
       </div>
     </section>
@@ -692,6 +746,46 @@
 
       <div id="annGroups"></div>
       <div class="empty-state" id="annEmpty" style="display:none;">Aucun contact pour le moment.</div>
+    </section>
+
+    <!-- ═══════════════ VUE STATISTIQUES ═══════════════ -->
+    <section class="view" id="view-stats">
+      <div class="view-head">
+        <div>
+          <h1>Statistiques d'usage</h1>
+          <div class="view-sub" id="statsSub">…</div>
+        </div>
+      </div>
+
+      <div class="gh-warning" id="statsGhWarning"></div>
+
+      <div id="statsContent" style="display:none;">
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="card-block">
+          <div class="block-label"><span class="num">📈</span> Tendance — 14 derniers jours</div>
+          <div class="bar-chart" id="statsTrendChart"></div>
+        </div>
+
+        <div class="stats-cols">
+          <div class="card-block">
+            <div class="block-label"><span class="num">❓</span> Questions sans réponse les plus fréquentes</div>
+            <div class="rank-list" id="statsHorsBase"></div>
+            <div class="empty-state" id="statsHorsBaseEmpty" style="display:none; padding:24px 12px;">Aucune question hors base enregistrée.</div>
+          </div>
+          <div class="card-block">
+            <div class="block-label"><span class="num">📄</span> Procédures les plus consultées</div>
+            <div class="rank-list" id="statsFiches"></div>
+            <div class="empty-state" id="statsFichesEmpty" style="display:none; padding:24px 12px;"></div>
+          </div>
+        </div>
+
+        <div class="card-block">
+          <div class="block-label"><span class="num">🏪</span> Répartition par magasin</div>
+          <div class="rank-list" id="statsMagasins"></div>
+          <div class="empty-state" id="statsMagasinsEmpty" style="display:none; padding:24px 12px;">Aucune donnée par magasin.</div>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -842,11 +936,26 @@
     if (e.target.files.length) handleFile(e.target.files[0]);
   });
 
-  const EXT_ICON = { pdf:'📄', doc:'📝', docx:'📝', xls:'📊', xlsx:'📊', jpg:'🖼️', jpeg:'🖼️', png:'🖼️' };
+  const EXT_ICON = { pdf:'📄', docx:'📝', xlsx:'📊' };
+  const MAX_FILE_BYTES = 3 * 1024 * 1024; // doit rester aligné avec api/admin-publish.js
 
   function handleFile(file) {
-    currentFile = file;
+    const errEl = document.getElementById('publishError');
+    errEl.classList.remove('visible');
+
     const ext = file.name.split('.').pop().toLowerCase();
+    if (!EXT_ICON[ext]) {
+      errEl.textContent = `Format ".${ext}" non pris en charge — seuls PDF, Word (.docx) et Excel (.xlsx) sont acceptés.`;
+      errEl.classList.add('visible');
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      errEl.textContent = `Fichier trop volumineux (${formatBytes(file.size)}, max ${Math.round(MAX_FILE_BYTES / (1024 * 1024))} Mo).`;
+      errEl.classList.add('visible');
+      return;
+    }
+
+    currentFile = file;
     document.getElementById('fcIcon').textContent = EXT_ICON[ext] || '📎';
     document.getElementById('fcName').textContent = file.name;
     document.getElementById('fcSize').textContent = formatBytes(file.size);
@@ -949,27 +1058,58 @@
     document.getElementById('publishBtn').disabled = !(title && selectedTheme && hasContent);
   }
 
-  // ── "Publication" (aperçu local uniquement — voir bandeau du haut) ──
-  function publish() {
-    const btn = document.getElementById('publishBtn');
-    btn.disabled = true;
-    btn.textContent = 'Publication…';
+  // ── Publication réelle (commit direct dans le dépôt via /api/admin-publish) ──
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+      reader.onerror = () => reject(new Error('Lecture du fichier impossible.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function publish() {
+    const errEl = document.getElementById('publishError');
+    errEl.classList.remove('visible');
 
     const title = currentMethod === 'text'
       ? document.getElementById('titleInputText').value.trim()
       : document.getElementById('titleInputFile').value.trim();
 
-    setTimeout(() => {
-      DOCS.forEach(d => d.isNew = false);
-      DOCS.push({ titre:title, theme:selectedTheme, id:null, isNew:true });
+    const btn = document.getElementById('publishBtn');
+    btn.disabled = true;
+    btn.textContent = 'Publication…';
 
-      updateCounts();
-      showToast('Fiche affichée en aperçu', "Pas encore sauvegardée ni envoyée par email — la connexion à la vraie base arrive à l'étape suivante.");
+    try {
+      const payload = { method: currentMethod, title, theme: selectedTheme };
+      if (currentMethod === 'file') {
+        if (!currentFile) throw new Error('Choisis un fichier.');
+        payload.fileName = currentFile.name;
+        payload.fileBase64 = await fileToBase64(currentFile);
+      } else {
+        payload.content = document.getElementById('contentInput').value.trim();
+      }
+
+      const res = await fetch('/api/admin-publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
+
+      const truncNote = data.truncated ? ' (contenu tronqué automatiquement, trop long)' : '';
+      showToast('Fiche publiée', `« ${title} » est en cours de déploiement (~1-2 min)${truncNote} — elle apparaîtra dans la bibliothèque et l'alerte email partira automatiquement aux magasins.`);
 
       resetAddForm();
       setFilter('Tous');
       switchView('library');
-    }, 650);
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Publier la fiche';
+    }
   }
 
   function resetAddForm() {
@@ -982,6 +1122,7 @@
     setMethod('text');
     renderThemePicker();
     syncPreview();
+    document.getElementById('publishError').classList.remove('visible');
     const btn = document.getElementById('publishBtn');
     btn.textContent = 'Publier la fiche';
   }
@@ -1296,10 +1437,134 @@
     return String(name || '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || '?';
   }
 
+  // ── Statistiques ──────────────────────────────────────────────
+  let statsLoaded = false;
+
+  function formatDateShort(iso) {
+    // 'YYYY-MM-DD' -> 'DD/MM'
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+    return m ? `${m[3]}/${m[2]}` : iso;
+  }
+
+  async function loadStats() {
+    const warnEl = document.getElementById('statsGhWarning');
+    const contentEl = document.getElementById('statsContent');
+    warnEl.classList.remove('visible');
+    try {
+      const res = await fetch('/api/admin-stats');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur de chargement.');
+      renderStats(data.stats, data.vide);
+      contentEl.style.display = 'block';
+      statsLoaded = true;
+    } catch (e) {
+      contentEl.style.display = 'none';
+      warnEl.innerHTML = `⚠️ Impossible de charger les statistiques : ${escapeHtml(e.message)} — voir <b>GUIDE-LOGS.md</b> (étape 5) pour brancher le Google Sheet de logs.`;
+      warnEl.classList.add('visible');
+    }
+  }
+
+  function renderStats(stats, vide) {
+    const sub = document.getElementById('statsSub');
+    if (vide || !stats.total) {
+      sub.textContent = 'Aucune donnée enregistrée pour le moment.';
+    } else {
+      sub.textContent = stats.periode.debut === stats.periode.fin
+        ? `Données du ${formatDateShort(stats.periode.debut)}`
+        : `Données du ${formatDateShort(stats.periode.debut)} au ${formatDateShort(stats.periode.fin)}`;
+    }
+
+    // Tuiles
+    const tiles = [
+      { label: 'Questions posées', value: String(stats.total) },
+      { label: 'Taux hors base', value: stats.total ? `${stats.horsBaseRate}%` : '—', sm: true },
+      { label: 'Satisfaction (👍)', value: stats.feedbackRate != null ? `${stats.feedbackRate}%` : '—', sm: true },
+      { label: 'Réponses données', value: String(stats.reponses) },
+    ];
+    document.getElementById('statsGrid').innerHTML = tiles.map(t => `
+      <div class="stat-tile">
+        <div class="stat-label">${escapeHtml(t.label)}</div>
+        <div class="stat-value ${t.sm ? 'sm' : ''}">${escapeHtml(t.value)}</div>
+      </div>
+    `).join('');
+
+    // Tendance (graphique en barres, une série)
+    const trend = stats.tendance || [];
+    const maxCount = Math.max(1, ...trend.map(d => d.count));
+    const chartEl = document.getElementById('statsTrendChart');
+    if (!trend.length) {
+      chartEl.innerHTML = '<div class="empty-state" style="width:100%;">Pas encore assez de données pour une tendance.</div>';
+    } else {
+      chartEl.innerHTML = trend.map((d, i) => {
+        const pct = Math.max(4, Math.round((d.count / maxCount) * 100));
+        const showLabel = i === 0 || i === trend.length - 1 || i % 3 === 0;
+        return `
+          <div class="bar-col">
+            <div class="bar-mark" style="height:${pct}%;" tabindex="0" aria-label="${escapeAttr(formatDateShort(d.date))} : ${d.count} question${d.count > 1 ? 's' : ''}"></div>
+            <div class="bar-tooltip"><b>${d.count}</b> question${d.count > 1 ? 's' : ''} — ${escapeHtml(formatDateShort(d.date))}</div>
+            <div class="bar-date">${showLabel ? escapeHtml(formatDateShort(d.date)) : ''}</div>
+          </div>`;
+      }).join('');
+    }
+
+    // Questions hors base les plus fréquentes
+    lastHorsBaseTop = stats.topHorsBase || [];
+    renderRankList('statsHorsBase', 'statsHorsBaseEmpty', stats.topHorsBase, {
+      emptyText: 'Aucune question hors base enregistrée.',
+      action: (item, index) => `<button class="rank-action" onclick="quickAddFromStats(${index})">+ Publier</button>`
+    });
+
+    // Procédures les plus consultées
+    const fichesEmptyEl = document.getElementById('statsFichesEmpty');
+    if (!stats.ficheDataDisponible) {
+      fichesEmptyEl.textContent = "Pas encore de données — active la colonne « Fiche » du Google Sheet (voir GUIDE-LOGS.md, étape 1).";
+    } else {
+      fichesEmptyEl.textContent = 'Aucune procédure consultée pour le moment.';
+    }
+    renderRankList('statsFiches', 'statsFichesEmpty', stats.topFiches, {});
+
+    // Répartition par magasin
+    renderRankList('statsMagasins', 'statsMagasinsEmpty', stats.parMagasin, {
+      emptyText: 'Aucune donnée par magasin.'
+    });
+  }
+
+  function renderRankList(listId, emptyId, items, opts) {
+    const listEl = document.getElementById(listId);
+    const emptyEl = document.getElementById(emptyId);
+    if (!items || !items.length) {
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    const maxCount = Math.max(1, ...items.map(i => i.count));
+    listEl.innerHTML = items.map((item, index) => `
+      <div class="rank-row">
+        <div class="rank-label" title="${escapeAttr(item.label)}">${escapeHtml(item.label)}</div>
+        <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${Math.round((item.count / maxCount) * 100)}%;"></div></div>
+        <div class="rank-count">${item.count}</div>
+        ${opts.action ? opts.action(item, index) : ''}
+      </div>
+    `).join('');
+  }
+
+  let lastHorsBaseTop = [];
+  function quickAddFromStats(index) {
+    const item = lastHorsBaseTop[index];
+    if (!item) return;
+    switchView('add');
+    setMethod('text');
+    document.getElementById('titleInputText').value = item.label;
+    document.getElementById('titleInputText').focus();
+    syncPreview();
+  }
+
   // ── Init ──────────────────────────────────────────────────────
   loadLibrary();
   loadMagasins();
   loadAnnuaire();
+  loadStats();
   syncPreview();
 </script>
 </body>

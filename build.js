@@ -116,7 +116,20 @@ function readDocsRecursive(dir, base = '') {
     const relPath  = base ? `${base}/${entry.name}` : entry.name;
     if (entry.isDirectory()) { docs.push(...readDocsRecursive(fullPath, relPath)); continue; }
     if (!entry.name.endsWith('.md')) continue;
-    const raw    = fs.readFileSync(fullPath, 'utf8');
+    const raw = fs.readFileSync(fullPath, 'utf8');
+
+    // Frontmatter optionnel (---\nclé: valeur\n---) : utilisé par l'admin
+    // ("Ajouter une procédure") pour fixer explicitement la catégorie/thème
+    // choisi, indépendamment du dossier réel du fichier — tous les documents
+    // publiés depuis l'admin vivent dans docs/admin/ mais gardent leur
+    // propre thème grâce à ce champ.
+    const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+    let categorieOverride = null;
+    if (fmMatch) {
+      const catM = fmMatch[1].match(/^categorie:\s*(.+)$/m);
+      if (catM) categorieOverride = catM[1].trim();
+    }
+
     const body   = raw.replace(/^---[\s\S]*?---\r?\n?/, '').trim();
     const titleM = body.match(/^#\s+(.+)/m);
     const titre  = titleM ? titleM[1].trim() : entry.name.replace(/\.md$/, '');
@@ -125,7 +138,7 @@ function readDocsRecursive(dir, base = '') {
     docs.push({
       id        : 'md-' + relPath.replace(/\.md$/, '').replace(/[\\/]/g, '-'),
       titre,
-      categorie : categorieFromDir(relDir),
+      categorie : categorieOverride || categorieFromDir(relDir),
       motsClefs : extractKeywords(titre, contenu),
       contenu,
       type      : detectType(body),

@@ -597,12 +597,12 @@ async function logout() {
 }
 
 // ── Logging Google Sheets ────────────────────────────────────
-async function logQuestion(question, reponse, type) {
+async function logQuestion(question, reponse, type, fiche) {
   try {
     await fetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, reponse, type })
+      body: JSON.stringify({ question, reponse, type, fiche: fiche || '' })
     });
   } catch(e) { /* silencieux */ }
 }
@@ -657,7 +657,7 @@ async function sendMessage() {
       addAssistantBubble(txt, msg, data.suggestions || [], data.pdf || null);
       renderLog.push({ type: 'assistant', text: txt, question: msg, suggestions: data.suggestions || [], pdf: data.pdf || null });
       saveHistory();
-      logQuestion(msg, txt, 'reponse');
+      logQuestion(msg, txt, 'reponse', data.pdf ? data.pdf.titre : '');
       conversationHistory.push({ role: 'assistant', content: txt });
     } else if (data.error) {
       throw new Error(data.error);
@@ -722,10 +722,10 @@ function addAssistantBubble(text, question, suggestions, pdf) {
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       Copier
     </button>
-    <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'positif')" title="Réponse utile">
+    <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'positif', '${encodeURIComponent(pdf && pdf.titre ? pdf.titre : '')}')" title="Réponse utile">
       👍 Utile
     </button>
-    <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'negatif')" title="Réponse incorrecte">
+    <button class="msg-action-btn" onclick="sendFeedback(this, '${encodeURIComponent(question)}', 'negatif', '${encodeURIComponent(pdf && pdf.titre ? pdf.titre : '')}')" title="Réponse incorrecte">
       👎 Incorrecte
     </button>`;
   messagesEl.appendChild(actions);
@@ -762,9 +762,10 @@ function copyResponse(bubbleId, btn) {
 }
 
 // ── Feedback 👍/👎 ───────────────────────────────────────────
-function sendFeedback(btn, questionEncoded, type) {
+function sendFeedback(btn, questionEncoded, type, ficheEncoded) {
   const question = decodeURIComponent(questionEncoded);
-  logQuestion(question, '', 'feedback_' + type);
+  const fiche = ficheEncoded ? decodeURIComponent(ficheEncoded) : '';
+  logQuestion(question, '', 'feedback_' + type, fiche);
   btn.classList.add(type === 'positif' ? 'liked' : 'disliked');
   btn.disabled = true;
   // Désactiver l'autre bouton feedback

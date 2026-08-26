@@ -12,7 +12,7 @@ module.exports = async function(req, res) {
   if (!WEBHOOK) return res.status(200).json({ skipped: true });
 
   try {
-    const { question, reponse, type } = req.body;
+    const { question, reponse, type, fiche } = req.body;
     const magasinCode = getMagasin(req);
     const magasinNom = magasinCode ? getMagasinNom(magasinCode) : null;
     await fetch(WEBHOOK, {
@@ -23,7 +23,8 @@ module.exports = async function(req, res) {
         question,
         type,
         reponse: reponse || '',
-        magasin: magasinNom ? `${magasinNom} (${magasinCode})` : (magasinCode || '')
+        magasin: magasinNom ? `${magasinNom} (${magasinCode})` : (magasinCode || ''),
+        fiche: fiche || ''
       })
     });
     return res.status(200).json({ ok: true });
