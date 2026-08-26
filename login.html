@@ -111,7 +111,7 @@
     <form id="loginForm">
       <div class="field">
         <label for="code">Code magasin</label>
-        <input type="text" id="code" inputmode="numeric" autocomplete="username" placeholder="ex. 200" autofocus />
+        <input type="text" id="code" inputmode="text" autocomplete="username" placeholder="ex. 200" autofocus />
       </div>
       <div class="field">
         <label for="password">Mot de passe</label>
@@ -135,9 +135,11 @@
       return '/';
     }
 
-    // Si une session valide existe déjà, retour direct à l'appli (ou à la fiche visée).
+    // Si une session valide existe déjà, retour direct à l'appli (ou à la fiche visée) —
+    // ou vers l'admin si la session est celle de l'administrateur.
     fetch('/api/whoami').then(r => r.json()).then(data => {
-      if (data.magasin) window.location.href = nextUrl();
+      if (data.magasin === 'ADMIN') window.location.href = '/admin.html';
+      else if (data.magasin) window.location.href = nextUrl();
     }).catch(() => {});
 
     form.addEventListener('submit', async (e) => {
@@ -158,7 +160,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          window.location.href = nextUrl();
+          window.location.href = data.isAdmin ? '/admin.html' : nextUrl();
         } else {
           errorEl.textContent = data.error || 'Identifiant ou mot de passe incorrect.';
           errorEl.classList.add('visible');

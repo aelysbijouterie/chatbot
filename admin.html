@@ -361,12 +361,70 @@
 
   ::-webkit-scrollbar { width:7px; height:7px; }
   ::-webkit-scrollbar-thumb { background:rgba(168,123,39,0.25); border-radius:10px; }
+
+  /* ── Vues Magasins / Annuaire : liste + formulaire ───────────────── */
+  .list-wrap { display:flex; flex-direction:column; gap:8px; }
+  .list-row {
+    display:flex; align-items:center; gap:14px;
+    background:var(--white); border:1px solid var(--line); border-radius:12px;
+    padding:12px 16px; box-shadow:var(--shadow-sm);
+    transition:border-color 0.15s, box-shadow 0.15s;
+  }
+  .list-row:hover { border-color:var(--gold); }
+  .list-row .lr-badge {
+    width:36px; height:36px; border-radius:10px; flex-shrink:0;
+    background:var(--sand); color:var(--gold); font-weight:700; font-size:0.78rem;
+    display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums;
+  }
+  .list-row .lr-main { flex:1; min-width:0; }
+  .list-row .lr-title { font-size:0.87rem; font-weight:600; color:var(--navy); }
+  .list-row .lr-sub { font-size:0.75rem; color:var(--text-muted); margin-top:2px; }
+  .list-row .lr-sub a { color:var(--text-muted); }
+  .list-row .lr-actions { display:flex; gap:6px; flex-shrink:0; }
+  .icon-btn {
+    width:30px; height:30px; border-radius:8px; border:1px solid var(--line);
+    background:var(--white); color:var(--text-muted); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:0.82rem;
+    transition:all 0.15s;
+  }
+  .icon-btn:hover { border-color:var(--gold); color:var(--navy); }
+  .icon-btn.danger:hover { border-color:var(--alert); color:var(--alert); }
+
+  .service-group { margin-bottom:18px; }
+  .service-group-title {
+    font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px;
+    color:var(--text-muted); margin-bottom:8px; padding-left:2px;
+  }
+  .qfq-list { margin-top:8px; padding-left:18px; }
+  .qfq-list li { font-size:0.76rem; color:var(--text-muted); line-height:1.5; }
+  .lr-detail { display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .lr-detail.open { display:block; }
+
+  .form-inline {
+    background:var(--sand); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; margin-bottom:16px; display:none;
+  }
+  .form-inline.open { display:block; animation:fadeIn 0.18s ease; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-grid.cols-3 { grid-template-columns:1fr 1fr 1.4fr; }
+  @media (max-width:720px) { .form-grid, .form-grid.cols-3 { grid-template-columns:1fr; } }
+  .form-actions { display:flex; gap:10px; margin-top:14px; align-items:center; }
+  .form-error {
+    display:none; background:rgba(185,64,64,0.08); border:1px solid rgba(185,64,64,0.25);
+    color:var(--alert); font-size:0.78rem; padding:8px 12px; border-radius:9px; margin-top:12px;
+  }
+  .form-error.visible { display:block; }
+  .gh-warning {
+    display:none; background:rgba(168,123,39,0.08); border:1px solid var(--line);
+    color:var(--text); font-size:0.76rem; line-height:1.5; padding:10px 14px; border-radius:10px; margin-bottom:16px;
+  }
+  .gh-warning.visible { display:block; }
 </style>
 </head>
 <body>
 
 <div class="status-banner">
-  <span>Connecté en administrateur — <b>la bibliothèque ci-dessous reflète la vraie base</b>, l'ajout de fiches est encore en aperçu (pas encore sauvegardé).</span>
+  <span>Connecté en administrateur — <b>Bibliothèque, Magasins et Annuaire sont connectés à la vraie base</b>, l'ajout de fiches est encore en aperçu (pas encore sauvegardé).</span>
   <button class="logout-btn" onclick="logout()">Déconnexion</button>
 </div>
 
@@ -392,11 +450,11 @@
       <button class="nav-item" data-view="add">
         <span class="ic">➕</span> Ajouter une procédure
       </button>
-      <button class="nav-item soon" title="Bientôt disponible">
-        <span class="ic">🏪</span> Magasins <span class="nav-soon-tag">Bientôt</span>
+      <button class="nav-item" data-view="magasins">
+        <span class="ic">🏪</span> Magasins <span class="nav-count" id="navMagCount">…</span>
       </button>
-      <button class="nav-item soon" title="Bientôt disponible">
-        <span class="ic">📒</span> Annuaire <span class="nav-soon-tag">Bientôt</span>
+      <button class="nav-item" data-view="annuaire">
+        <span class="ic">📒</span> Annuaire <span class="nav-count" id="navAnnCount">…</span>
       </button>
     </div>
 
@@ -538,6 +596,104 @@
       </div>
     </section>
 
+    <!-- ═══════════════ VUE MAGASINS ═══════════════ -->
+    <section class="view" id="view-magasins">
+      <div class="view-head">
+        <div>
+          <h1>Magasins</h1>
+          <div class="view-sub"><b id="magCount">…</b> magasins enregistrés</div>
+        </div>
+        <button class="btn btn-primary" id="magAddBtn" onclick="openMagForm()">➕ Ajouter un magasin</button>
+      </div>
+
+      <div class="gh-warning" id="magGhWarning">
+        ⚠️ Les écritures nécessitent la variable d'environnement <b>GITHUB_TOKEN</b> côté serveur (Vercel → Settings → Environment Variables). Tant qu'elle n'est pas configurée, l'ajout/modification/suppression de magasins échouera.
+      </div>
+
+      <div class="form-inline" id="magForm">
+        <div class="block-label"><span class="num">🏪</span> <span id="magFormTitle">Nouveau magasin</span></div>
+        <div class="form-grid cols-3">
+          <div class="field" style="margin-bottom:0;">
+            <label for="magCode">Code magasin</label>
+            <input type="text" id="magCode" placeholder="ex. 424" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="magNom">Nom du magasin</label>
+            <input type="text" id="magNom" placeholder="ex. Aélys Bordeaux Centre" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="magEmail">Email du magasin</label>
+            <input type="text" id="magEmail" placeholder="ex. bordeaux-centre@aelys.fr" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" id="magSaveBtn" onclick="saveMagasin()">Enregistrer</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeMagForm()">Annuler</button>
+        </div>
+        <div class="form-error" id="magFormError"></div>
+      </div>
+
+      <div class="list-wrap" id="magList"></div>
+      <div class="empty-state" id="magEmpty" style="display:none;">Aucun magasin pour le moment.</div>
+    </section>
+
+    <!-- ═══════════════ VUE ANNUAIRE ═══════════════ -->
+    <section class="view" id="view-annuaire">
+      <div class="view-head">
+        <div>
+          <h1>Annuaire</h1>
+          <div class="view-sub"><b id="annCount">…</b> contacts · <b id="annServiceCount">…</b> services</div>
+        </div>
+        <button class="btn btn-primary" id="annAddBtn" onclick="openAnnForm()">➕ Ajouter un contact</button>
+      </div>
+
+      <div class="gh-warning" id="annGhWarning">
+        ⚠️ Les écritures nécessitent la variable d'environnement <b>GITHUB_TOKEN</b> côté serveur (Vercel → Settings → Environment Variables). Tant qu'elle n'est pas configurée, l'ajout/modification/suppression de contacts échouera.
+      </div>
+
+      <div class="form-inline" id="annForm">
+        <div class="block-label"><span class="num">📒</span> <span id="annFormTitle">Nouveau contact</span></div>
+        <div class="form-grid">
+          <div class="field" style="margin-bottom:0;">
+            <label for="annNom">Nom complet</label>
+            <input type="text" id="annNom" placeholder="ex. Marie Dupont" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="annPoste">Poste</label>
+            <input type="text" id="annPoste" placeholder="ex. Responsable Achats" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="annService">Service</label>
+            <input type="text" id="annService" placeholder="ex. Logistique" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="annEmail">Email</label>
+            <input type="text" id="annEmail" placeholder="ex. marie.dupont@aelys.fr" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="annTelephone">Téléphone</label>
+            <input type="text" id="annTelephone" placeholder="ex. 06 00 00 00 00" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="annPhoto">Photo (URL, optionnel)</label>
+            <input type="text" id="annPhoto" placeholder="/photos/marie-dupont.jpg" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px; margin-bottom:0;">
+          <label for="annQfq">Qui fait quoi (une ligne par tâche)</label>
+          <textarea id="annQfq" style="min-height:90px;" placeholder="ex. Gestion des commandes fournisseurs&#10;Suivi des litiges livraison"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" id="annSaveBtn" onclick="saveContact()">Enregistrer</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeAnnForm()">Annuler</button>
+        </div>
+        <div class="form-error" id="annFormError"></div>
+      </div>
+
+      <div id="annGroups"></div>
+      <div class="empty-state" id="annEmpty" style="display:none;">Aucun contact pour le moment.</div>
+    </section>
+
   </main>
 </div>
 
@@ -552,12 +708,12 @@
 <script>
   // ── Authentification ────────────────────────────────────────────
   fetch('/api/whoami').then(r => r.json()).then(data => {
-    if (data.magasin !== 'ADMIN') window.location.href = '/admin-login.html';
-  }).catch(() => { window.location.href = '/admin-login.html'; });
+    if (data.magasin !== 'ADMIN') window.location.href = '/login.html';
+  }).catch(() => { window.location.href = '/login.html'; });
 
   async function logout() {
     try { await fetch('/api/logout', { method: 'POST' }); } catch(e) {}
-    window.location.href = '/admin-login.html';
+    window.location.href = '/login.html';
   }
 
   // ── Thèmes prédéfinis (utilisés par le sélecteur de la vue Ajouter) ──
@@ -839,8 +995,311 @@
     window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 5200);
   }
 
+  // ── Magasins ──────────────────────────────────────────────────
+  let MAGASINS = [];
+  let magEditingCode = null; // code du magasin en cours d'édition, null si création
+
+  async function loadMagasins() {
+    try {
+      const res = await fetch('/api/admin-magasins');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur de chargement.');
+      MAGASINS = data.magasins;
+      document.getElementById('magGhWarning').classList.remove('visible');
+    } catch (e) {
+      MAGASINS = [];
+      document.getElementById('magList').innerHTML = '';
+      document.getElementById('magEmpty').style.display = 'none';
+      document.getElementById('magGhWarning').classList.add('visible');
+      document.getElementById('magGhWarning').innerHTML = `⚠️ Impossible de charger les magasins : ${escapeHtml(e.message)}`;
+    }
+    renderMagasins();
+    document.getElementById('magCount').textContent = MAGASINS.length;
+    document.getElementById('navMagCount').textContent = MAGASINS.length;
+  }
+
+  function renderMagasins() {
+    const wrap = document.getElementById('magList');
+    document.getElementById('magEmpty').style.display = MAGASINS.length ? 'none' : 'block';
+    wrap.innerHTML = MAGASINS.slice().sort((a,b) => a.code.localeCompare(b.code, 'fr', {numeric:true})).map(m => `
+      <div class="list-row">
+        <div class="lr-badge">${escapeHtml(m.code)}</div>
+        <div class="lr-main">
+          <div class="lr-title">${escapeHtml(m.nom)}</div>
+          <div class="lr-sub">${escapeHtml(m.email)}</div>
+        </div>
+        <div class="lr-actions">
+          <button class="icon-btn" title="Modifier" onclick="editMagasin('${escapeAttr(m.code)}')">✏️</button>
+          <button class="icon-btn danger" title="Supprimer" onclick="deleteMagasin('${escapeAttr(m.code)}')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openMagForm() {
+    magEditingCode = null;
+    document.getElementById('magFormTitle').textContent = 'Nouveau magasin';
+    document.getElementById('magCode').value = '';
+    document.getElementById('magCode').disabled = false;
+    document.getElementById('magNom').value = '';
+    document.getElementById('magEmail').value = '';
+    document.getElementById('magFormError').classList.remove('visible');
+    document.getElementById('magForm').classList.add('open');
+    document.getElementById('magCode').focus();
+  }
+  function closeMagForm() {
+    document.getElementById('magForm').classList.remove('open');
+    document.getElementById('magFormError').classList.remove('visible');
+  }
+  function editMagasin(code) {
+    const m = MAGASINS.find(x => x.code === code);
+    if (!m) return;
+    magEditingCode = code;
+    document.getElementById('magFormTitle').textContent = `Modifier ${m.nom}`;
+    document.getElementById('magCode').value = m.code;
+    document.getElementById('magNom').value = m.nom;
+    document.getElementById('magEmail').value = m.email;
+    document.getElementById('magFormError').classList.remove('visible');
+    document.getElementById('magForm').classList.add('open');
+    document.getElementById('magNom').focus();
+  }
+
+  async function saveMagasin() {
+    const code = document.getElementById('magCode').value.trim();
+    const nom = document.getElementById('magNom').value.trim();
+    const email = document.getElementById('magEmail').value.trim();
+    const errEl = document.getElementById('magFormError');
+    errEl.classList.remove('visible');
+
+    if (!code || !nom || !email) {
+      errEl.textContent = 'Merci de remplir le code, le nom et l\'email.';
+      errEl.classList.add('visible');
+      return;
+    }
+
+    const btn = document.getElementById('magSaveBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement…';
+    try {
+      const res = await fetch('/api/admin-magasins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, nom, email, originalCode: magEditingCode })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
+      MAGASINS = data.magasins;
+      renderMagasins();
+      document.getElementById('magCount').textContent = MAGASINS.length;
+      document.getElementById('navMagCount').textContent = MAGASINS.length;
+      closeMagForm();
+      showToast(magEditingCode ? 'Magasin modifié' : 'Magasin ajouté', `${nom} — enregistré dans le dépôt (déploiement en cours, ~1-2 min).`);
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.classList.add('visible');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enregistrer';
+    }
+  }
+
+  async function deleteMagasin(code) {
+    const m = MAGASINS.find(x => x.code === code);
+    if (!m) return;
+    if (!confirm(`Supprimer le magasin ${m.nom} (${code}) ? Cette action est irréversible.`)) return;
+    try {
+      const res = await fetch('/api/admin-magasins', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
+      MAGASINS = data.magasins;
+      renderMagasins();
+      document.getElementById('magCount').textContent = MAGASINS.length;
+      document.getElementById('navMagCount').textContent = MAGASINS.length;
+      showToast('Magasin supprimé', `${m.nom} a été retiré du dépôt (déploiement en cours, ~1-2 min).`);
+    } catch (e) {
+      alert('Erreur : ' + e.message);
+    }
+  }
+
+  // ── Annuaire ──────────────────────────────────────────────────
+  let CONTACTS = [];
+  let annEditingIndex = null; // index du contact en cours d'édition, null si création
+
+  async function loadAnnuaire() {
+    try {
+      const res = await fetch('/api/admin-contacts');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur de chargement.');
+      CONTACTS = data.contacts;
+      document.getElementById('annGhWarning').classList.remove('visible');
+    } catch (e) {
+      CONTACTS = [];
+      document.getElementById('annGroups').innerHTML = '';
+      document.getElementById('annEmpty').style.display = 'none';
+      document.getElementById('annGhWarning').classList.add('visible');
+      document.getElementById('annGhWarning').innerHTML = `⚠️ Impossible de charger l'annuaire : ${escapeHtml(e.message)}`;
+    }
+    renderAnnuaire();
+    document.getElementById('annCount').textContent = CONTACTS.length;
+    document.getElementById('navAnnCount').textContent = CONTACTS.length;
+    document.getElementById('annServiceCount').textContent = new Set(CONTACTS.map(c => c.service)).size;
+  }
+
+  function renderAnnuaire() {
+    const wrap = document.getElementById('annGroups');
+    document.getElementById('annEmpty').style.display = CONTACTS.length ? 'none' : 'block';
+
+    const services = [];
+    CONTACTS.forEach((c, i) => {
+      let group = services.find(g => g.service === c.service);
+      if (!group) { group = { service: c.service, items: [] }; services.push(group); }
+      group.items.push({ ...c, _index: i });
+    });
+
+    wrap.innerHTML = services.map(g => `
+      <div class="service-group">
+        <div class="service-group-title">${escapeHtml(g.service)} <span style="opacity:0.6;">(${g.items.length})</span></div>
+        <div class="list-wrap">
+          ${g.items.map(c => `
+            <div class="list-row" style="align-items:flex-start;">
+              <div class="lr-badge">${escapeHtml(initials(c.nom))}</div>
+              <div class="lr-main">
+                <div class="lr-title">${escapeHtml(c.nom)}${c.poste ? ` <span style="font-weight:400;color:var(--text-muted);">— ${escapeHtml(c.poste)}</span>` : ''}</div>
+                <div class="lr-sub">${c.email ? escapeHtml(c.email) : ''}${c.email && c.telephone ? ' · ' : ''}${c.telephone ? escapeHtml(c.telephone) : ''}</div>
+                ${(c.quiFaitQuoi && c.quiFaitQuoi.length) ? `
+                  <div class="lr-detail" id="annDetail${c._index}">
+                    <ul class="qfq-list">${c.quiFaitQuoi.map(q => `<li>${escapeHtml(q)}</li>`).join('')}</ul>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" style="margin-top:8px; padding:3px 10px; font-size:0.7rem;" onclick="toggleAnnDetail(${c._index})">Qui fait quoi ▾</button>
+                ` : ''}
+              </div>
+              <div class="lr-actions">
+                <button class="icon-btn" title="Modifier" onclick="editContact(${c._index})">✏️</button>
+                <button class="icon-btn danger" title="Supprimer" onclick="deleteContact(${c._index})">🗑️</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleAnnDetail(index) {
+    document.getElementById('annDetail' + index).classList.toggle('open');
+  }
+
+  function openAnnForm() {
+    annEditingIndex = null;
+    document.getElementById('annFormTitle').textContent = 'Nouveau contact';
+    ['annNom','annPoste','annService','annEmail','annTelephone','annPhoto','annQfq'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('annFormError').classList.remove('visible');
+    document.getElementById('annForm').classList.add('open');
+    document.getElementById('annNom').focus();
+  }
+  function closeAnnForm() {
+    document.getElementById('annForm').classList.remove('open');
+    document.getElementById('annFormError').classList.remove('visible');
+  }
+  function editContact(index) {
+    const c = CONTACTS[index];
+    if (!c) return;
+    annEditingIndex = index;
+    document.getElementById('annFormTitle').textContent = `Modifier ${c.nom}`;
+    document.getElementById('annNom').value = c.nom || '';
+    document.getElementById('annPoste').value = c.poste || '';
+    document.getElementById('annService').value = c.service || '';
+    document.getElementById('annEmail').value = c.email || '';
+    document.getElementById('annTelephone').value = c.telephone || '';
+    document.getElementById('annPhoto').value = c.photo || '';
+    document.getElementById('annQfq').value = (c.quiFaitQuoi || []).join('\n');
+    document.getElementById('annFormError').classList.remove('visible');
+    document.getElementById('annForm').classList.add('open');
+    document.getElementById('annNom').focus();
+  }
+
+  async function saveContact() {
+    const nom = document.getElementById('annNom').value.trim();
+    const poste = document.getElementById('annPoste').value.trim();
+    const service = document.getElementById('annService').value.trim();
+    const email = document.getElementById('annEmail').value.trim();
+    const telephone = document.getElementById('annTelephone').value.trim();
+    const photo = document.getElementById('annPhoto').value.trim();
+    const quiFaitQuoi = document.getElementById('annQfq').value.split('\n').map(s => s.trim()).filter(Boolean);
+    const errEl = document.getElementById('annFormError');
+    errEl.classList.remove('visible');
+
+    if (!nom || !service) {
+      errEl.textContent = 'Merci de remplir au moins le nom et le service.';
+      errEl.classList.add('visible');
+      return;
+    }
+
+    const btn = document.getElementById('annSaveBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement…';
+    try {
+      const payload = { nom, poste, service, email, telephone, photo, quiFaitQuoi };
+      const isEdit = annEditingIndex !== null;
+      if (isEdit) payload.index = annEditingIndex;
+      const res = await fetch('/api/admin-contacts', {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
+      CONTACTS = data.contacts;
+      renderAnnuaire();
+      document.getElementById('annCount').textContent = CONTACTS.length;
+      document.getElementById('navAnnCount').textContent = CONTACTS.length;
+      document.getElementById('annServiceCount').textContent = new Set(CONTACTS.map(c => c.service)).size;
+      closeAnnForm();
+      showToast(isEdit ? 'Contact modifié' : 'Contact ajouté', `${nom} — enregistré dans le dépôt (déploiement en cours, ~1-2 min).`);
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.classList.add('visible');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enregistrer';
+    }
+  }
+
+  async function deleteContact(index) {
+    const c = CONTACTS[index];
+    if (!c) return;
+    if (!confirm(`Supprimer ${c.nom} de l'annuaire ? Cette action est irréversible.`)) return;
+    try {
+      const res = await fetch('/api/admin-contacts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
+      CONTACTS = data.contacts;
+      renderAnnuaire();
+      document.getElementById('annCount').textContent = CONTACTS.length;
+      document.getElementById('navAnnCount').textContent = CONTACTS.length;
+      document.getElementById('annServiceCount').textContent = new Set(CONTACTS.map(c => c.service)).size;
+      showToast('Contact supprimé', `${c.nom} a été retiré du dépôt (déploiement en cours, ~1-2 min).`);
+    } catch (e) {
+      alert('Erreur : ' + e.message);
+    }
+  }
+
+  // ── Utilitaires ───────────────────────────────────────────────
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s).replace(/`/g, '&#96;'); }
+  function initials(name) {
+    return String(name || '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || '?';
+  }
+
   // ── Init ──────────────────────────────────────────────────────
   loadLibrary();
+  loadMagasins();
+  loadAnnuaire();
   syncPreview();
 </script>
 </body>
