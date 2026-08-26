@@ -88,13 +88,23 @@ async function notifyStoresOfNewDocs(newDocs) {
       </div>
     </div>`;
 
-  const entries = Object.entries(STORE_EMAILS);
+  // Mode test : tant que ALERT_TEST_EMAIL est définie (Vercel → Environment
+  // Variables), l'alerte part uniquement vers cette adresse au lieu des 23
+  // magasins — pratique pour vérifier que tout fonctionne avant d'ouvrir
+  // l'envoi en vrai. Retirer la variable (ou la vider) pour repasser en
+  // envoi réel à tous les magasins.
+  const testEmail = process.env.ALERT_TEST_EMAIL;
+  const entries = testEmail ? [['TEST', testEmail]] : Object.entries(STORE_EMAILS);
+  if (testEmail) {
+    console.log(`ℹ Mode test actif (ALERT_TEST_EMAIL) — envoi uniquement à ${testEmail} au lieu des ${Object.keys(STORE_EMAILS).length} magasins.`);
+  }
+
   let sent = 0, failed = 0;
   for (const [code, email] of entries) {
-    const r = await sendMail({ to: email, subject, html });
+    const r = await sendMail({ to: email, subject: testEmail ? `[TEST] ${subject}` : subject, html });
     if (r.ok) sent++; else { failed++; console.warn(`  ✗ magasin ${code} (${email}) : ${r.error}`); }
   }
-  console.log(`✓ Alerte "nouvelle procédure" : ${sent} envoyé(s), ${failed} échec(s) sur ${entries.length} magasins.`);
+  console.log(`✓ Alerte "nouvelle procédure" : ${sent} envoyé(s), ${failed} échec(s) sur ${entries.length} destinataire(s).`);
 }
 
 // ── Lecture des .md existants ─────────────────────────────────────────────────
