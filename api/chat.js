@@ -1,3 +1,5 @@
+const { getMagasin } = require('../lib/stores.js');
+
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -5,6 +7,7 @@ module.exports = async function(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  if (!getMagasin(req)) return res.status(401).json({ error: 'Non authentifié' });
 
   try {
     const { messages } = req.body;

@@ -375,6 +375,9 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Annuaire
     </button>
+    <button class="ann-btn" onclick="logout()" title="Se déconnecter">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
     <div class="status-pill">
       <div class="status-dot"></div>
       En ligne
@@ -574,12 +577,24 @@ async function loadWhoami() {
   try {
     const res = await fetch('/api/whoami');
     const data = await res.json();
-    currentMagasin = data.magasin || null;
+    if (!data.magasin) {
+      window.location.href = '/login.html';
+      return;
+    }
+    currentMagasin = data.magasin;
     if (data.nom) document.getElementById('headerSub').textContent = `${data.nom} (${data.magasin})`;
-  } catch(e) { /* silencieux */ }
+  } catch(e) {
+    window.location.href = '/login.html';
+    return;
+  }
   loadHistory();
 }
 loadWhoami();
+
+async function logout() {
+  try { await fetch('/api/logout', { method: 'POST' }); } catch(e) { /* silencieux */ }
+  window.location.href = '/login.html';
+}
 
 // ── Logging Google Sheets ────────────────────────────────────
 async function logQuestion(question, reponse, type) {

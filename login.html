@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — AUREL'IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream:       #F5F1EE;
+      --sand:        #EFE8E0;
+      --gold:        #A87B27;
+      --gold-light:  #C9A04A;
+      --navy:        #112033;
+      --white:       #FFFFFF;
+      --text:        #1C1C1C;
+      --text-muted:  #7A7068;
+      --alert:       #B94040;
+      --glass-bg:    rgba(255,255,255,0.55);
+      --glass-border:rgba(168,123,39,0.18);
+      --shadow:      0 8px 40px rgba(17,32,51,0.10);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background:
+        radial-gradient(ellipse 60% 50% at 80% 10%, rgba(168,123,39,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 10% 90%, rgba(17,32,51,0.05) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .card {
+      width:100%; max-width:380px;
+      background:var(--glass-bg);
+      backdrop-filter:blur(24px) saturate(1.4);
+      -webkit-backdrop-filter:blur(24px) saturate(1.4);
+      border:1px solid var(--glass-border);
+      border-radius:24px;
+      box-shadow:var(--shadow), 0 1px 0 rgba(255,255,255,0.8) inset;
+      padding:36px 32px;
+      position:relative;
+    }
+    .logo-ring {
+      width:52px;height:52px;border-radius:16px;
+      background:linear-gradient(135deg,var(--navy) 0%,#1e3a5f 100%);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 18px;
+      box-shadow:0 4px 14px rgba(17,32,51,0.22);
+    }
+    .logo-ring svg { width:26px;height:26px; }
+    h1 { font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:600;color:var(--navy);text-align:center;letter-spacing:0.5px; }
+    .subtitle { text-align:center;color:var(--text-muted);font-size:0.82rem;margin-top:6px;margin-bottom:28px; }
+    label { display:block;font-size:0.75rem;font-weight:500;color:var(--navy);margin-bottom:6px;letter-spacing:0.3px; }
+    .field { margin-bottom:16px; }
+    input {
+      width:100%; padding:12px 14px;
+      border:1px solid rgba(168,123,39,0.25);
+      border-radius:12px;
+      font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--text);
+      background:rgba(255,255,255,0.85);
+      transition:border-color 0.15s;
+    }
+    input:focus { outline:none; border-color:var(--gold); }
+    button {
+      width:100%; margin-top:10px;
+      padding:13px;
+      background:linear-gradient(135deg,var(--navy) 0%,#1e3a5f 100%);
+      color:#fff; border:none; border-radius:12px;
+      font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:500;letter-spacing:0.3px;
+      cursor:pointer;
+      box-shadow:0 4px 16px rgba(17,32,51,0.2);
+      transition:transform 0.15s, box-shadow 0.15s;
+    }
+    button:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(17,32,51,0.28); }
+    button:disabled { opacity:0.6; cursor:wait; transform:none; }
+    .error {
+      display:none;
+      background:rgba(185,64,64,0.08); border:1px solid rgba(185,64,64,0.25);
+      color:var(--alert); font-size:0.82rem;
+      padding:10px 14px; border-radius:10px; margin-bottom:16px;
+      text-align:center;
+    }
+    .error.visible { display:block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-ring">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2H4C2.9 2 2 2.9 2 4v13c0 1.1.9 2 2 2h3l3 3 3-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" stroke="#A87B27" stroke-width="1.4" stroke-linejoin="round"/>
+        <circle cx="8.5" cy="10.5" r="1.2" fill="#A87B27"/>
+        <circle cx="12" cy="10.5" r="1.2" fill="#A87B27"/>
+        <circle cx="15.5" cy="10.5" r="1.2" fill="#A87B27"/>
+      </svg>
+    </div>
+    <h1>AUREL'IA</h1>
+    <div class="subtitle">Connexion magasin</div>
+
+    <div class="error" id="loginError"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="code">Code magasin</label>
+        <input type="text" id="code" inputmode="numeric" autocomplete="username" placeholder="ex. 200" autofocus />
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" autocomplete="current-password" placeholder="••••••" />
+      </div>
+      <button type="submit" id="submitBtn">Se connecter</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorEl = document.getElementById('loginError');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Si une session valide existe déjà, retour direct à l'appli.
+    fetch('/api/whoami').then(r => r.json()).then(data => {
+      if (data.magasin) window.location.href = '/';
+    }).catch(() => {});
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.classList.remove('visible');
+      const code = document.getElementById('code').value.trim();
+      const password = document.getElementById('password').value;
+      if (!code || !password) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Connexion…';
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, password })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = '/';
+        } else {
+          errorEl.textContent = data.error || 'Identifiant ou mot de passe incorrect.';
+          errorEl.classList.add('visible');
+        }
+      } catch (err) {
+        errorEl.textContent = 'Erreur de connexion — réessayez.';
+        errorEl.classList.add('visible');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Se connecter';
+      }
+    });
+  </script>
+</body>
+</html>

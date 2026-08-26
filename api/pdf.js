@@ -181,8 +181,12 @@ function buildSimplePdf(titre, contenu, dateMAJ) {
   return Buffer.from(pdf, 'latin1');
 }
 
+const { getMagasin } = require('./../lib/stores.js');
+
 module.exports = async function(req, res) {
   try {
+    if (!getMagasin(req)) return res.status(401).send('Non authentifié');
+
     const id = (req.query && req.query.id) || '';
     if (!id) return res.status(400).send('Paramètre id manquant');
 
