@@ -325,6 +325,26 @@ module.exports = async function(req, res) {
     if (!doc) return res.status(404).send('Document introuvable');
 
     const titre = doc.titre || doc.title || 'Procédure';
+
+    // Fiche avec un vrai PDF source (procedures-pdf/, y compris celles
+    // publiées depuis l'admin) : on sert ce fichier ORIGINAL tel quel, sans
+    // jamais le régénérer — le PDF généré à la volée ci-dessous ne sert que
+    // pour les fiches rédigées en .md, qui n'ont pas de fichier source.
+    if (doc.pdfUrl) {
+      try {
+        const upstream = await fetch(doc.pdfUrl);
+        if (!upstream.ok) throw new Error(`${upstream.status} ${upstream.statusText}`);
+        const original = Buffer.from(await upstream.arrayBuffer());
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${asciiSlug(titre)}.pdf"`);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        return res.status(200).send(original);
+      } catch (e) {
+        console.warn(`pdf.js: échec de récupération du PDF original (${doc.pdfUrl}) — génération de secours. ${e.message}`);
+        // On continue ci-dessous : mieux vaut une version générée que rien.
+      }
+    }
+
     const contenuRaw = doc.contenu || doc.content || '';
     const contenu = contenuRaw
       .replace(/!\[.*?\]\(.*?\)\n?/g, '')
