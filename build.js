@@ -149,7 +149,8 @@ function readDocsRecursive(dir, base = '') {
   return docs;
 }
 
-// ── Lecture des PDFs (extraction texte auto) ──────────────────────────────────
+// ── Lecture des PDFs (extraction texte auto pour l'index de recherche
+// uniquement — le fichier PDF original n'est jamais modifié ni réécrit) ───
 async function readPdfsRecursive(dir, base = '') {
   let pdfParse;
   try { pdfParse = require('pdf-parse'); } catch(e) {
@@ -172,21 +173,40 @@ async function readPdfsRecursive(dir, base = '') {
       const buf  = fs.readFileSync(fullPath);
       const data = await pdfParse(buf, { max: 0 });
 
-      // Titre = nom du fichier sans extension, sans préfixe numérique "X - "
-      const rawName = entry.name.replace(/\.pdf$/i, '');
-      const titre   = rawName.replace(/^\d+\s*[-–]\s*/, '').trim();
+      // Métadonnées optionnelles déposées par l'admin à côté du PDF
+      // (fichier.pdf.json : { "titre": "...", "categorie": "..." }).
+      // Permet de fixer le vrai titre et le thème choisi sans jamais
+      // toucher au fichier PDF lui-même, qui reste strictement identique
+      // à l'original importé.
+      let metaOverride = null;
+      const metaPath = fullPath + '.json';
+      if (fs.existsSync(metaPath)) {
+        try { metaOverride = JSON.parse(fs.readFileSync(metaPath, 'utf8')); }
+        catch (e) { console.warn(`  ⚠ métadonnées invalides pour ${entry.name} (ignorées)`); }
+      }
 
-      // Contenu texte brut, limité à 6000 chars
+      // Titre = métadonnée admin si présente, sinon nom du fichier sans
+      // extension et sans préfixe numérique "X - "
+      const rawName = entry.name.replace(/\.pdf$/i, '');
+      const titre = (metaOverride && metaOverride.titre)
+        ? String(metaOverride.titre).trim()
+        : rawName.replace(/^\d+\s*[-–]\s*/, '').trim();
+
+      // Contenu texte brut, limité à 6000 chars (sert uniquement à la
+      // recherche par mots-clés, jamais affiché tel quel)
       const contenu = (data.text || '')
         .replace(/\n{3,}/g, '\n\n').trim().slice(0, 6000);
 
       const relDir  = path.dirname(relPath) === '.' ? '' : path.dirname(relPath);
+      const categorie = (metaOverride && metaOverride.categorie)
+        ? String(metaOverride.categorie).trim()
+        : (categorieFromDir(relDir) || 'Procédures');
       const pdfUrl  = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/procedures-pdf/${relPath.replace(/\\/g, '/')}`;
 
       docs.push({
         id        : 'pdf-' + relPath.replace(/\.pdf$/i, '').replace(/[\\/\s]/g, '-'),
         titre,
-        categorie : categorieFromDir(relDir) || 'Procédures',
+        categorie,
         motsClefs : extractKeywords(titre, contenu),
         contenu,
         type      : 'procedure',

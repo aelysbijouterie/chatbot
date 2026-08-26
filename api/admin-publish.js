@@ -2,12 +2,18 @@ const { getMagasin } = require('../lib/stores.js');
 const { putFile } = require('../lib/github.js');
 
 // ── Publication réelle d'une fiche depuis l'admin ───────────────────────
-// Toute fiche publiée ici (texte collé ou fichier importé) devient un
-// fichier .md dans docs/admin/, avec le thème choisi fixé explicitement en
-// frontmatter (voir build.js). Le prochain build (déclenché automatiquement
-// par ce commit) l'indexe dans kb.json/docs-index.json et envoie l'alerte
-// "nouvelle procédure" aux magasins — aucun code supplémentaire n'est
-// nécessaire pour ça, c'est le pipeline existant qui s'en charge.
+// - Texte collé, Word (.docx) ou Excel (.xlsx) : le texte est extrait et
+//   devient un fichier .md dans docs/admin/, avec le thème choisi fixé
+//   explicitement en frontmatter (voir build.js).
+// - PDF : le fichier original est commité TEL QUEL (aucune extraction, aucune
+//   conversion) dans procedures-pdf/admin/, exactement comme les procédures
+//   PDF déjà présentes dans le dépôt — un petit fichier de métadonnées
+//   (titre + thème) est déposé à côté pour que build.js sache comment
+//   l'indexer sans jamais toucher au contenu du PDF lui-même.
+// Le prochain build (déclenché automatiquement par ce commit) indexe la
+// fiche dans kb.json/docs-index.json et envoie l'alerte "nouvelle procédure"
+// aux magasins — aucun code supplémentaire n'est nécessaire pour ça, c'est
+// le pipeline existant qui s'en charge.
 
 const MAX_FILE_BYTES = 3 * 1024 * 1024; // 3 Mo décodés — reste sous la limite de charge utile de Vercel une fois encodé en base64
 const MAX_CONTENT_CHARS = 12000;
@@ -31,18 +37,6 @@ function slugify(s) {
 
 async function extractText(fileName, buffer) {
   const ext = (String(fileName).split('.').pop() || '').toLowerCase();
-
-  if (ext === 'pdf') {
-    let pdfParse;
-    try { pdfParse = require('pdf-parse'); }
-    catch (e) { throw new Error('Extraction PDF indisponible sur le serveur.'); }
-    try {
-      const data = await pdfParse(buffer, { max: 0 });
-      return (data.text || '').replace(/\n{3,}/g, '\n\n').trim();
-    } catch (e) {
-      throw new Error("Ce PDF n'a pas pu être lu (fichier corrompu, protégé, ou scanné en image sans texte).");
-    }
-  }
 
   if (ext === 'docx') {
     let mammoth;
@@ -91,6 +85,25 @@ async function extractText(fileName, buffer) {
   throw new Error(`Format ".${ext}" non pris en charge (PDF, Word .docx et Excel .xlsx uniquement pour le moment).`);
 }
 
+// Les PDF ne sont jamais convertis : ils sont commités tels quels dans
+// procedures-pdf/admin/, avec un fichier de métadonnées à côté
+// (<slug>.pdf.json) pour porter le titre et le thème choisis par l'admin.
+// build.js (readPdfsRecursive) lit ce fichier optionnel sans jamais réécrire
+// le PDF — voir build.js pour le détail.
+async function publishPdf({ trimTitle, trimTheme, buffer }) {
+  const slug = `${slugify(trimTitle)}-${Date.now().toString(36)}`;
+  const pdfPath = `procedures-pdf/admin/${slug}.pdf`;
+  const metaPath = `${pdfPath}.json`;
+  const meta = { titre: trimTitle, categorie: trimTheme };
+
+  // Les métadonnées d'abord : tant que le .pdf n'existe pas encore, build.js
+  // ignore ce .json orphelin (pas de fiche mal classée entre les deux commits).
+  await putFile(metaPath, JSON.stringify(meta, null, 2), undefined, `Admin : métadonnées de la fiche PDF "${trimTitle}"`);
+  await putFile(pdfPath, buffer, undefined, `Admin : ajout de la fiche PDF "${trimTitle}"`);
+
+  return pdfPath;
+}
+
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -119,6 +132,20 @@ module.exports = async function(req, res) {
 
       if (buffer.length > MAX_FILE_BYTES) {
         return res.status(400).json({ ok: false, error: `Fichier trop volumineux (max ${Math.round(MAX_FILE_BYTES / (1024 * 1024))} Mo).` });
+      }
+
+      const ext = (String(fileName).split('.').pop() || '').toLowerCase();
+
+      // PDF : aucune extraction/conversion — le fichier original est commité
+      // à l'identique (voir publishPdf). On sort ici, avant le chemin .md.
+      if (ext === 'pdf') {
+        try {
+          const pdfPath = await publishPdf({ trimTitle, trimTheme, buffer });
+          return res.status(200).json({ ok: true, path: pdfPath, truncated: false });
+        } catch (e) {
+          console.error('admin-publish (pdf) error:', e);
+          return res.status(500).json({ ok: false, error: e.message || 'Erreur serveur.' });
+        }
       }
 
       try {
@@ -156,4 +183,4 @@ module.exports = async function(req, res) {
   }
 };
 
-module.exports._internal = { slugify, extractText };
+module.exports._internal = { slugify, extractText, publishPdf };
