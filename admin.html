@@ -229,6 +229,8 @@
     display:flex; align-items:center; justify-content:center; font-size:0.72rem;
     background:var(--sand); color:var(--gold);
   }
+  .doc-card-actions { display:flex; gap:5px; flex-shrink:0; }
+  .doc-card-actions .icon-btn { width:26px; height:26px; font-size:0.74rem; }
   .doc-title { font-size:0.86rem; font-weight:600; color:var(--navy); line-height:1.35; margin-bottom:8px; min-height:2.4em; }
   .doc-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .doc-tag {
@@ -549,8 +551,8 @@
     <section class="view" id="view-add">
       <div class="view-head">
         <div>
-          <h1>Ajouter une procédure</h1>
-          <div class="view-sub">Collez un texte ou importez un fichier, choisissez un thème, publiez.</div>
+          <h1 id="addTitle">Ajouter une procédure</h1>
+          <div class="view-sub" id="addSub">Collez un texte ou importez un fichier, choisissez un thème, publiez.</div>
         </div>
         <button class="btn btn-ghost" onclick="goToLibrary()">📚 Voir la bibliothèque</button>
       </div>
@@ -594,7 +596,7 @@
               <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
                 <span class="dz-ic">📤</span>
                 <div class="dz-title">Glissez un fichier ici, ou cliquez pour parcourir</div>
-                <div class="dz-sub">Le texte sera extrait automatiquement</div>
+                <div class="dz-sub" id="dzHint">Le texte sera extrait automatiquement</div>
                 <div class="fmt-badges">
                   <span class="fmt-badge">PDF</span>
                   <span class="fmt-badge">Word (.docx)</span>
@@ -827,6 +829,8 @@
   let selectedTheme = null;
   let currentMethod = 'text';
   let currentFile = null;
+  let editingDocId = null;   // id de la fiche en cours de modification, null si création
+  let editingDocType = null; // 'md' | 'pdf' — pertinent seulement en édition
 
   const themeMeta = k => THEMES.find(t => t.key === k) || { label:k, icon:'🏷️' };
 
@@ -881,16 +885,21 @@
     document.getElementById('emptyState').style.display = list.length ? 'none' : 'block';
     grid.innerHTML = list.map(d => {
       const tag = `<span class="doc-tag">${themeMeta(d.theme).label}</span>`;
+      const actions = d.id ? `
+        <div class="doc-card-actions">
+          <button class="icon-btn" title="Modifier" onclick="event.stopPropagation(); editDoc('${escapeAttr(d.id)}')">✏️</button>
+          <button class="icon-btn danger" title="Supprimer" onclick="event.stopPropagation(); deleteDoc('${escapeAttr(d.id)}', '${escapeAttr(d.titre)}')">🗑️</button>
+        </div>` : '';
       const inner = `
         <div class="doc-card-top">
           <div class="doc-src">📄</div>
+          ${actions}
         </div>
-        <div class="doc-title">${d.titre}</div>
+        <div class="doc-title">${escapeHtml(d.titre)}</div>
         <div class="doc-meta">${tag}${d.isNew ? '<span class="doc-date">aperçu local</span>' : ''}</div>
       `;
-      return d.id
-        ? `<a class="doc-card clickable ${d.isNew?'is-new':''}" href="/api/pdf?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Ouvrir la fiche PDF">${inner}</a>`
-        : `<div class="doc-card ${d.isNew?'is-new':''}">${inner}</div>`;
+      const openAttr = d.id ? ` onclick="window.open('/api/pdf?id=${encodeURIComponent(d.id)}','_blank','noopener')"` : '';
+      return `<div class="doc-card ${d.id?'clickable':''} ${d.isNew?'is-new':''}"${openAttr} title="${d.id ? 'Ouvrir la fiche PDF' : ''}">${inner}</div>`;
     }).join('');
   }
 
@@ -903,7 +912,7 @@
   document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
   });
-  function goToAdd() { switchView('add'); }
+  function goToAdd() { resetAddForm(); switchView('add'); }
   function goToLibrary() { switchView('library'); }
 
   // ── Ajouter : méthode texte / fichier ────────────────────────────
@@ -1052,9 +1061,11 @@
     const title = currentMethod === 'text'
       ? document.getElementById('titleInputText').value.trim()
       : document.getElementById('titleInputFile').value.trim();
+    // En édition d'une fiche PDF, le fichier est optionnel : on peut modifier
+    // uniquement le titre/thème sans le remplacer.
     const hasContent = currentMethod === 'text'
       ? document.getElementById('contentInput').value.trim().length > 0
-      : !!currentFile;
+      : (!!currentFile || (editingDocId && editingDocType === 'pdf'));
     document.getElementById('publishBtn').disabled = !(title && selectedTheme && hasContent);
   }
 
@@ -1076,21 +1087,26 @@
       ? document.getElementById('titleInputText').value.trim()
       : document.getElementById('titleInputFile').value.trim();
 
+    const isEdit = !!editingDocId;
     const btn = document.getElementById('publishBtn');
     btn.disabled = true;
-    btn.textContent = 'Publication…';
+    btn.textContent = isEdit ? 'Enregistrement…' : 'Publication…';
 
     try {
       const payload = { method: currentMethod, title, theme: selectedTheme };
+      if (isEdit) payload.id = editingDocId;
+
       if (currentMethod === 'file') {
-        if (!currentFile) throw new Error('Choisis un fichier.');
-        payload.fileName = currentFile.name;
-        payload.fileBase64 = await fileToBase64(currentFile);
+        if (!currentFile && !isEdit) throw new Error('Choisis un fichier.');
+        if (currentFile) {
+          payload.fileName = currentFile.name;
+          payload.fileBase64 = await fileToBase64(currentFile);
+        }
       } else {
         payload.content = document.getElementById('contentInput').value.trim();
       }
 
-      const res = await fetch('/api/admin-publish', {
+      const res = await fetch(isEdit ? '/api/admin-edit' : '/api/admin-publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1098,8 +1114,12 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
 
-      const truncNote = data.truncated ? ' (contenu tronqué automatiquement, trop long)' : '';
-      showToast('Fiche publiée', `« ${title} » est en cours de déploiement (~1-2 min)${truncNote} — elle apparaîtra dans la bibliothèque et l'alerte email partira automatiquement aux magasins.`);
+      if (isEdit) {
+        showToast('Fiche modifiée', `« ${title} » sera mise à jour dans la bibliothèque au prochain déploiement (~1-2 min).`);
+      } else {
+        const truncNote = data.truncated ? ' (contenu tronqué automatiquement, trop long)' : '';
+        showToast('Fiche publiée', `« ${title} » est en cours de déploiement (~1-2 min)${truncNote} — elle apparaîtra dans la bibliothèque et l'alerte email partira automatiquement aux magasins.`);
+      }
 
       resetAddForm();
       setFilter('Tous');
@@ -1108,23 +1128,91 @@
       errEl.textContent = e.message;
       errEl.classList.add('visible');
       btn.disabled = false;
-      btn.textContent = 'Publier la fiche';
+      btn.textContent = isEdit ? 'Enregistrer les modifications' : 'Publier la fiche';
     }
   }
 
   function resetAddForm() {
+    editingDocId = null;
+    editingDocType = null;
     document.getElementById('titleInputText').value = '';
     document.getElementById('titleInputFile').value = '';
     document.getElementById('contentInput').value = '';
     document.getElementById('charCount').textContent = '0';
     removeFile({ stopPropagation(){} });
     selectedTheme = null;
+    document.getElementById('methodBtnText').disabled = false;
+    document.getElementById('methodBtnFile').disabled = false;
+    document.getElementById('dzHint').textContent = 'Le texte sera extrait automatiquement';
     setMethod('text');
     renderThemePicker();
     syncPreview();
     document.getElementById('publishError').classList.remove('visible');
+    document.getElementById('addTitle').textContent = 'Ajouter une procédure';
+    document.getElementById('addSub').textContent = 'Collez un texte ou importez un fichier, choisissez un thème, publiez.';
     const btn = document.getElementById('publishBtn');
     btn.textContent = 'Publier la fiche';
+  }
+
+  // ── Modifier / supprimer une fiche existante ─────────────────────
+  async function editDoc(id) {
+    try {
+      const res = await fetch(`/api/admin-doc?id=${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Fiche introuvable.');
+      const doc = data.doc;
+
+      resetAddForm();
+      editingDocId = doc.id;
+      editingDocType = doc.type;
+
+      selectedTheme = doc.categorie;
+      if (!THEMES.some(t => t.key === selectedTheme)) THEMES.push({ key: selectedTheme, label: selectedTheme, icon:'🏷️' });
+      renderThemePicker();
+
+      document.getElementById('addTitle').textContent = 'Modifier la fiche';
+      document.getElementById('publishBtn').textContent = 'Enregistrer les modifications';
+
+      if (doc.type === 'pdf') {
+        document.getElementById('addSub').textContent = 'Modifie le titre ou le thème, ou remplace le fichier PDF.';
+        setMethod('file');
+        document.getElementById('methodBtnText').disabled = true;
+        document.getElementById('titleInputFile').value = doc.titre;
+        document.getElementById('dzHint').textContent = `Fichier actuel : ${doc.fileName} — laisse vide pour le garder, ou choisis-en un nouveau pour le remplacer`;
+      } else {
+        document.getElementById('addSub').textContent = 'Modifie le texte, le titre ou le thème de cette fiche.';
+        setMethod('text');
+        document.getElementById('methodBtnFile').disabled = true;
+        document.getElementById('titleInputText').value = doc.titre;
+        document.getElementById('contentInput').value = doc.contenu || '';
+        document.getElementById('charCount').textContent = String((doc.contenu || '').length);
+      }
+
+      syncPreview();
+      switchView('add');
+    } catch (e) {
+      alert('Impossible de charger la fiche : ' + e.message);
+    }
+  }
+
+  async function deleteDoc(id, titre) {
+    if (!confirm(`Supprimer la fiche « ${titre} » ? Cette action est irréversible.`)) return;
+    try {
+      const res = await fetch('/api/admin-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');
+      DOCS = DOCS.filter(d => d.id !== id);
+      renderThemeFilters();
+      filterLibrary();
+      updateCounts();
+      showToast('Fiche supprimée', `« ${titre} » sera retirée de la bibliothèque au prochain déploiement (~1-2 min).`);
+    } catch (e) {
+      alert('Erreur : ' + e.message);
+    }
   }
 
   function showToast(title, sub) {

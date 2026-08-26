@@ -143,6 +143,11 @@ function readDocsRecursive(dir, base = '') {
       contenu,
       type      : detectType(body),
       pdfUrl    : null,
+      // Chemin réel dans le dépôt (docs/...) : utilisé par l'admin pour
+      // pouvoir modifier/supprimer cette fiche de façon fiable, sans avoir
+      // à reconstituer un chemin à partir de l'id (l'id perd l'info exacte
+      // du chemin en aplatissant les "/" en "-").
+      path      : `docs/${relPath.replace(/\\/g, '/')}`,
       dateMAJ   : new Date().toISOString().slice(0, 10)
     });
   }
@@ -201,7 +206,11 @@ async function readPdfsRecursive(dir, base = '') {
       const categorie = (metaOverride && metaOverride.categorie)
         ? String(metaOverride.categorie).trim()
         : (categorieFromDir(relDir) || 'Procédures');
-      const pdfUrl  = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/procedures-pdf/${relPath.replace(/\\/g, '/')}`;
+      // Chemin réel dans le dépôt : sert à construire pdfUrl ET à ce que
+      // l'admin puisse modifier/supprimer cette fiche de façon fiable
+      // (contrairement à l'id, qui aplatit les "/" et perd l'info exacte).
+      const filePath = `procedures-pdf/${relPath.replace(/\\/g, '/')}`;
+      const pdfUrl  = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${filePath}`;
 
       docs.push({
         id        : 'pdf-' + relPath.replace(/\.pdf$/i, '').replace(/[\\/\s]/g, '-'),
@@ -211,6 +220,7 @@ async function readPdfsRecursive(dir, base = '') {
         contenu,
         type      : 'procedure',
         pdfUrl,
+        path      : filePath,
         dateMAJ   : new Date().toISOString().slice(0, 10)
       });
       console.log(`  PDF ✓ ${titre}`);
