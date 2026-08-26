@@ -1,4 +1,5 @@
 const { getMagasin, getMagasinNom } = require('../lib/stores.js');
+const { sendMail } = require('../lib/mailer.js');
 
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,28 +11,12 @@ module.exports = async function(req, res) {
 
   try {
     const { question, date } = req.body;
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
     const magasinCode = getMagasin(req);
     const magasinNom = magasinCode ? getMagasinNom(magasinCode) : null;
     const magasinLabel = magasinNom ? `${magasinNom} (${magasinCode})` : (magasinCode || 'Magasin inconnu');
 
-    if (!RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY non configurée — alerte email désactivée');
-      return res.status(200).json({ skipped: true });
-    }
-
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`
-      },
-      body: JSON.stringify({
-        from: "AUREL'IA <onboarding@resend.dev>",
-        to: ['manon.mignot@aelys.fr'],
-        subject: `⚠️ AUREL'IA — Question hors base [${magasinLabel}]`,
-        html: `
+    const html = `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#F5F1EE;">
             <div style="background:#112033;padding:20px 24px;border-radius:12px 12px 0 0;">
               <h1 style="color:#A87B27;font-size:20px;margin:0;letter-spacing:1px;">AUREL'IA</h1>
@@ -50,11 +35,16 @@ module.exports = async function(req, res) {
               <p style="color:#999;font-size:12px;margin:0;">Le ${date}</p>
             </div>
           </div>
-        `
-      })
-    });
+        `;
 
-    return res.status(200).json({ sent: resendRes.ok });
+    const result = await sendMail({
+      to: 'manon.mignot@aelys.fr',
+      subject: `⚠️ AUREL'IA — Question hors base [${magasinLabel}]`,
+      html
+    });
+    if (!result.ok) console.warn('Alerte "hors base" non envoyée :', result.error);
+
+    return res.status(200).json({ sent: result.ok });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });

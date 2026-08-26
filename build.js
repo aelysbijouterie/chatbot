@@ -50,11 +50,7 @@ function categorieFromDir(relDir) {
 // Envoyée à tous les magasins quand un déploiement en production ajoute au
 // moins une fiche par rapport au docs-index.json précédemment commité.
 async function notifyStoresOfNewDocs(newDocs) {
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  if (!RESEND_API_KEY) {
-    console.warn('⚠ RESEND_API_KEY non configurée — alerte "nouvelle procédure" non envoyée.');
-    return;
-  }
+  const { sendMail } = require('./lib/mailer.js');
 
   let STORE_EMAILS;
   try {
@@ -71,12 +67,6 @@ async function notifyStoresOfNewDocs(newDocs) {
     console.warn('⚠ URL de production introuvable — alerte "nouvelle procédure" non envoyée.');
     return;
   }
-
-  // Adresse d'envoi : tant qu'aucun domaine n'est vérifié dans Resend, le
-  // sandbox onboarding@resend.dev ne peut envoyer qu'à l'adresse du compte
-  // Resend lui-même — pas aux 23 magasins. Une fois un domaine vérifié
-  // (gratuit, voir GUIDE-ADMIN.md), définir RESEND_FROM_ADDRESS dans Vercel.
-  const fromAddress = process.env.RESEND_FROM_ADDRESS || "AUREL'IA <onboarding@resend.dev>";
 
   const plural = newDocs.length > 1 ? 's' : '';
   const subject = `AUREL'IA — ${newDocs.length} nouvelle${plural} procédure${plural} disponible${plural}`;
@@ -101,17 +91,8 @@ async function notifyStoresOfNewDocs(newDocs) {
   const entries = Object.entries(STORE_EMAILS);
   let sent = 0, failed = 0;
   for (const [code, email] of entries) {
-    try {
-      const r = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({ from: fromAddress, to: [email], subject, html })
-      });
-      if (r.ok) sent++; else { failed++; console.warn(`  ✗ magasin ${code} (${email}) : HTTP ${r.status}`); }
-    } catch (e) {
-      failed++;
-      console.warn(`  ✗ magasin ${code} (${email}) : ${e.message}`);
-    }
+    const r = await sendMail({ to: email, subject, html });
+    if (r.ok) sent++; else { failed++; console.warn(`  ✗ magasin ${code} (${email}) : ${r.error}`); }
   }
   console.log(`✓ Alerte "nouvelle procédure" : ${sent} envoyé(s), ${failed} échec(s) sur ${entries.length} magasins.`);
 }
