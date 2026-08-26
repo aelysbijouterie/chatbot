@@ -5,6 +5,7 @@ import { next } from '@vercel/functions';
 // (à configurer dans Vercel > Settings > Environment Variables) doit
 // contenir un JSON du type {"200":"627111","300":"199510", ...}.
 export const config = {
+  runtime: 'nodejs',
   matcher: '/((?!favicon.ico).*)',
 };
 
