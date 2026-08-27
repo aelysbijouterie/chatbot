@@ -904,8 +904,8 @@
       const tag = `<span class="doc-tag">${themeMeta(d.theme).label}</span>`;
       const actions = d.id ? `
         <div class="doc-card-actions">
-          <button class="icon-btn" title="Modifier" onclick="event.stopPropagation(); editDoc('${escapeAttr(d.id)}')">✏️</button>
-          <button class="icon-btn danger" title="Supprimer" onclick="event.stopPropagation(); deleteDoc('${escapeAttr(d.id)}', '${escapeAttr(d.titre)}')">🗑️</button>
+          <button class="icon-btn" title="Modifier" onclick="event.stopPropagation(); editDoc(${jsAttr(d.id)})">✏️</button>
+          <button class="icon-btn danger" title="Supprimer" onclick="event.stopPropagation(); deleteDoc(${jsAttr(d.id)}, ${jsAttr(d.titre)})">🗑️</button>
         </div>` : '';
       const inner = `
         <div class="doc-card-top">
@@ -1581,6 +1581,19 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   function escapeAttr(s) { return escapeHtml(s).replace(/`/g, '&#96;'); }
+  // Encode une valeur pour l'utiliser comme argument d'un onclick inline :
+  // JSON.stringify() produit un littéral JS avec guillemets doubles et gère
+  // lui-même l'échappement interne (apostrophes, guillemets, etc.) — un souci
+  // qu'escapeAttr() seul ne couvre pas : le navigateur décode les entités HTML
+  // (ex. &#39;) AVANT que le JS de l'attribut onclick soit interprété, donc une
+  // simple apostrophe échappée en HTML redevient une apostrophe littérale et
+  // casse la chaîne JS (ex. les titres contenant "d'inventaire", "l'atelier"...).
+  // On échappe ensuite seulement & < > " pour rester valide dans l'attribut
+  // HTML (delimité par des guillemets doubles) sans toucher aux backslashs.
+  function jsAttr(s) {
+    return JSON.stringify(String(s == null ? '' : s))
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
   function initials(name) {
     return String(name || '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || '?';
   }
