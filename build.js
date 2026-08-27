@@ -51,6 +51,7 @@ function categorieFromDir(relDir) {
 // moins une fiche par rapport au docs-index.json précédemment commité.
 async function notifyStoresOfNewDocs(newDocs) {
   const { sendMail } = require('./lib/mailer.js');
+  const { emailShell, escapeHtml, BRAND } = require('./lib/email-template.js');
 
   let STORE_EMAILS;
   try {
@@ -70,23 +71,35 @@ async function notifyStoresOfNewDocs(newDocs) {
 
   const plural = newDocs.length > 1 ? 's' : '';
   const subject = `AUREL'IA — ${newDocs.length} nouvelle${plural} procédure${plural} disponible${plural}`;
-  const listHtml = newDocs.map(d => `
-    <li style="margin-bottom:10px;">
-      <a href="${baseUrl}/api/pdf?id=${encodeURIComponent(d.id)}" style="color:#A87B27;font-weight:600;text-decoration:none;">${d.titre}</a>
-      <span style="color:#999;font-size:12px;"> — ${d.categorie}</span>
-    </li>`).join('');
-  const html = `
-    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#F5F1EE;">
-      <div style="background:#112033;padding:20px 24px;border-radius:12px 12px 0 0;">
-        <h1 style="color:#A87B27;font-size:20px;margin:0;letter-spacing:1px;">AUREL'IA</h1>
-        <p style="color:#EFE8E0;font-size:12px;margin:4px 0 0;opacity:0.8;">Assistante Aélys Nouvelle-Aquitaine</p>
-      </div>
-      <div style="background:#fff;padding:24px;border-radius:0 0 12px 12px;border:1px solid #EFE8E0;">
-        <h2 style="color:#112033;font-size:16px;margin:0 0 14px;">${newDocs.length} nouvelle${plural} procédure${plural} ${newDocs.length > 1 ? 'sont disponibles' : 'est disponible'} dans AUREL'IA</h2>
-        <ul style="list-style:none;padding:0;margin:0 0 16px;">${listHtml}</ul>
-        <p style="color:#999;font-size:12px;margin:0;">Cliquez sur une fiche pour l'ouvrir (connexion magasin demandée si besoin).</p>
-      </div>
-    </div>`;
+
+  const docCards = newDocs.map(d => `
+    <tr><td style="padding-bottom:10px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.cream}; border-radius:10px;">
+        <tr>
+          <td style="width:4px; background:${BRAND.gold}; border-radius:10px 0 0 10px; font-size:0; line-height:0;">&nbsp;</td>
+          <td style="padding:13px 16px;">
+            <a href="${baseUrl}/api/pdf?id=${encodeURIComponent(d.id)}" style="font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; font-size:14.5px; font-weight:600; color:${BRAND.navy}; text-decoration:none;">${escapeHtml(d.titre)}</a>
+            <div style="font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; font-size:12px; color:${BRAND.muted}; margin-top:3px;">${escapeHtml(d.categorie)}</div>
+          </td>
+          <td style="width:28px; text-align:center; color:${BRAND.gold}; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; font-size:16px;">&#8594;</td>
+        </tr>
+      </table>
+    </td></tr>`).join('');
+
+  const bodyHtml = `
+    <p style="margin:0 0 18px;">${newDocs.length > 1 ? 'De nouvelles fiches sont disponibles' : 'Une nouvelle fiche est disponible'} dans la base documentaire d'AUREL'IA :</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${docCards}</table>
+    <p style="margin:18px 0 0; font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; font-size:12.5px; color:${BRAND.muted};">Cliquez sur une fiche pour l'ouvrir (connexion magasin demandée si besoin).</p>`;
+
+  const html = emailShell({
+    preheader: `${newDocs.length} nouvelle${plural} procédure${plural} vien${newDocs.length > 1 ? 'nent' : 't'} d'être publiée${plural} sur AUREL'IA.`,
+    eyebrow: `Nouvelle${plural} procédure${plural}`,
+    title: `${newDocs.length} nouvelle${plural} fiche${plural} ${newDocs.length > 1 ? 'sont disponibles' : 'est disponible'}`,
+    bodyHtml,
+    cta: { label: "Ouvrir AUREL'IA", url: baseUrl },
+    accentColor: BRAND.gold,
+    footerNote: 'Vous recevez cet e-mail automatiquement à chaque mise à jour de la base documentaire.',
+  });
 
   // Mode test : tant que ALERT_TEST_EMAIL est définie (Vercel → Environment
   // Variables), l'alerte part uniquement vers cette adresse au lieu des 23
