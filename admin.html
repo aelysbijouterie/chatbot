@@ -378,6 +378,18 @@
     background:var(--sand); color:var(--gold); font-weight:700; font-size:0.78rem;
     display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums;
   }
+  .list-row .lr-badge img { width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; }
+
+  /* ── Photo de contact (annuaire) ──────────── */
+  .photo-preview {
+    width:44px; height:44px; border-radius:12px; flex-shrink:0;
+    background:var(--sand); color:var(--gold); font-weight:700; font-size:0.85rem;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; border:1px solid var(--line);
+  }
+  .photo-preview img { width:100%; height:100%; object-fit:cover; display:block; }
+  #annPhotoInput { display:none; }
+  /* ─────────────────────────────────────────── */
   .list-row .lr-main { flex:1; min-width:0; }
   .list-row .lr-title { font-size:0.87rem; font-weight:600; color:var(--navy); }
   .list-row .lr-sub { font-size:0.75rem; color:var(--text-muted); margin-top:2px; }
@@ -731,8 +743,13 @@
             <input type="text" id="annTelephone" placeholder="ex. 06 00 00 00 00" />
           </div>
           <div class="field" style="margin-bottom:0;">
-            <label for="annPhoto">Photo (URL, optionnel)</label>
-            <input type="text" id="annPhoto" placeholder="/photos/marie-dupont.jpg" />
+            <label>Photo (optionnel)</label>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="photo-preview" id="annPhotoPreview">?</div>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('annPhotoInput').click()">Choisir une photo</button>
+              <input type="file" id="annPhotoInput" accept="image/jpeg,image/png,image/webp" onchange="handleContactPhoto(event)" />
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:5px;" id="annPhotoHint">Aucune photo</div>
           </div>
         </div>
         <div class="field" style="margin-top:12px; margin-bottom:0;">
@@ -1355,6 +1372,8 @@
   // ── Annuaire ──────────────────────────────────────────────────
   let CONTACTS = [];
   let annEditingIndex = null; // index du contact en cours d'édition, null si création
+  let annPhotoFile = null;       // nouveau fichier choisi (File), null si aucun changement
+  let annPhotoExisting = null;   // chemin de la photo déjà en place (conservé si pas de nouveau fichier)
 
   async function loadAnnuaire() {
     try {
@@ -1393,7 +1412,7 @@
         <div class="list-wrap">
           ${g.items.map(c => `
             <div class="list-row" style="align-items:flex-start;">
-              <div class="lr-badge">${escapeHtml(initials(c.nom))}</div>
+              <div class="lr-badge">${c.photo ? `<img src="${escapeAttr(c.photo)}" alt="" />` : escapeHtml(initials(c.nom))}</div>
               <div class="lr-main">
                 <div class="lr-title">${escapeHtml(c.nom)}${c.poste ? ` <span style="font-weight:400;color:var(--text-muted);">— ${escapeHtml(c.poste)}</span>` : ''}</div>
                 <div class="lr-sub">${c.email ? escapeHtml(c.email) : ''}${c.email && c.telephone ? ' · ' : ''}${c.telephone ? escapeHtml(c.telephone) : ''}</div>
@@ -1422,10 +1441,40 @@
   function openAnnForm() {
     annEditingIndex = null;
     document.getElementById('annFormTitle').textContent = 'Nouveau contact';
-    ['annNom','annPoste','annService','annEmail','annTelephone','annPhoto','annQfq'].forEach(id => document.getElementById(id).value = '');
+    ['annNom','annPoste','annService','annEmail','annTelephone','annQfq'].forEach(id => document.getElementById(id).value = '');
+    resetAnnPhoto();
     document.getElementById('annFormError').classList.remove('visible');
     document.getElementById('annForm').classList.add('open');
     document.getElementById('annNom').focus();
+  }
+  function resetAnnPhoto() {
+    annPhotoFile = null;
+    annPhotoExisting = null;
+    document.getElementById('annPhotoInput').value = '';
+    document.getElementById('annPhotoPreview').innerHTML = '?';
+    document.getElementById('annPhotoHint').textContent = 'Aucune photo';
+  }
+  function handleContactPhoto(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const hintEl = document.getElementById('annPhotoHint');
+    if (!['jpg','jpeg','png','webp'].includes(ext)) {
+      hintEl.textContent = 'Format non pris en charge (JPG, PNG ou WEBP uniquement).';
+      hintEl.style.color = 'var(--alert)';
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      hintEl.textContent = `Photo trop volumineuse (${formatBytes(file.size)}, max 2 Mo).`;
+      hintEl.style.color = 'var(--alert)';
+      e.target.value = '';
+      return;
+    }
+    annPhotoFile = file;
+    hintEl.style.color = 'var(--text-muted)';
+    hintEl.textContent = file.name;
+    document.getElementById('annPhotoPreview').innerHTML = `<img src="${URL.createObjectURL(file)}" alt="" />`;
   }
   function closeAnnForm() {
     document.getElementById('annForm').classList.remove('open');
@@ -1441,8 +1490,13 @@
     document.getElementById('annService').value = c.service || '';
     document.getElementById('annEmail').value = c.email || '';
     document.getElementById('annTelephone').value = c.telephone || '';
-    document.getElementById('annPhoto').value = c.photo || '';
     document.getElementById('annQfq').value = (c.quiFaitQuoi || []).join('\n');
+    annPhotoFile = null;
+    annPhotoExisting = c.photo || null;
+    document.getElementById('annPhotoInput').value = '';
+    document.getElementById('annPhotoPreview').innerHTML = c.photo ? `<img src="${escapeAttr(c.photo)}" alt="" />` : escapeHtml(initials(c.nom));
+    document.getElementById('annPhotoHint').style.color = 'var(--text-muted)';
+    document.getElementById('annPhotoHint').textContent = c.photo ? 'Laisse vide pour garder cette photo' : 'Aucune photo';
     document.getElementById('annFormError').classList.remove('visible');
     document.getElementById('annForm').classList.add('open');
     document.getElementById('annNom').focus();
@@ -1454,7 +1508,6 @@
     const service = document.getElementById('annService').value.trim();
     const email = document.getElementById('annEmail').value.trim();
     const telephone = document.getElementById('annTelephone').value.trim();
-    const photo = document.getElementById('annPhoto').value.trim();
     const quiFaitQuoi = document.getElementById('annQfq').value.split('\n').map(s => s.trim()).filter(Boolean);
     const errEl = document.getElementById('annFormError');
     errEl.classList.remove('visible');
@@ -1468,7 +1521,14 @@
     const btn = document.getElementById('annSaveBtn');
     btn.disabled = true; btn.textContent = 'Enregistrement…';
     try {
-      const payload = { nom, poste, service, email, telephone, photo, quiFaitQuoi };
+      // Photo : on ne touche jamais un fichier déjà en place — on renvoie
+      // simplement son chemin tel quel, sauf si une nouvelle photo a été
+      // choisie (auquel cas le serveur l'upload et remplace le chemin).
+      const payload = { nom, poste, service, email, telephone, photo: annPhotoExisting || '', quiFaitQuoi };
+      if (annPhotoFile) {
+        payload.photoFileName = annPhotoFile.name;
+        payload.photoBase64 = await fileToBase64(annPhotoFile);
+      }
       const isEdit = annEditingIndex !== null;
       if (isEdit) payload.index = annEditingIndex;
       const res = await fetch('/api/admin-contacts', {

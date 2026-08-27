@@ -253,7 +253,7 @@
     .ann-filter:hover { border-color:var(--gold); color:var(--navy); }
     .ann-filter.active { background:var(--navy); color:white; border-color:var(--navy); }
 
-    .ann-body { flex:1; overflow-y:auto; padding:14px 16px 20px; }
+    .ann-body { flex:1; overflow-y:auto; padding:14px 16px calc(48px + env(safe-area-inset-bottom, 0px)); }
     .ann-body::-webkit-scrollbar { width:4px; }
     .ann-body::-webkit-scrollbar-thumb { background:rgba(168,123,39,0.2); border-radius:10px; }
 
@@ -319,22 +319,60 @@
       color:var(--gold); transition:all 0.2s;
     }
     .ann-btn:hover { background:var(--navy); color:var(--gold); border-color:var(--navy); }
+
+    .ann-btn.ann-btn-primary {
+      background:linear-gradient(135deg,var(--navy) 0%,#1e3a5f 100%);
+      color:var(--gold-light); border-color:var(--navy);
+      box-shadow:0 3px 10px rgba(17,32,51,0.2);
+    }
+    .ann-btn.ann-btn-primary:hover { background:linear-gradient(135deg,#0d1a2b 0%,var(--navy) 100%); color:var(--gold-light); }
     /* ─────────────────────────────────────────── */
 
     /* Bouton retour (masqué tant qu'on est sur l'accueil) */
     .back-btn { display:none; }
     .back-btn.visible { display:flex; }
 
+    /* ── CARTE D'ENTRÉE BIBLIOTHÈQUE (accueil) ─────── */
+    .bib-hero {
+      display:flex; align-items:center; gap:14px;
+      width:100%; max-width:680px; margin:0 auto 22px;
+      padding:16px 20px;
+      background:linear-gradient(135deg,var(--navy) 0%,#1e3a5f 100%);
+      border:none; border-radius:16px; cursor:pointer;
+      text-align:left; color:white;
+      box-shadow:0 6px 20px rgba(17,32,51,0.22);
+      transition:transform 0.18s ease, box-shadow 0.18s ease;
+      font-family:'DM Sans',sans-serif;
+    }
+    .bib-hero:hover { transform:translateY(-1px); box-shadow:0 8px 26px rgba(17,32,51,0.3); }
+    .bib-hero-icon {
+      width:44px; height:44px; border-radius:12px; flex-shrink:0;
+      background:rgba(255,255,255,0.12);
+      display:flex; align-items:center; justify-content:center; font-size:1.3rem;
+    }
+    .bib-hero-text { flex:1; min-width:0; }
+    .bib-hero-title { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:600; color:var(--gold-light); }
+    .bib-hero-sub { font-size:0.8rem; color:rgba(239,232,224,0.75); margin-top:3px; line-height:1.4; }
+    .bib-hero-arrow { font-size:1.2rem; color:var(--gold-light); flex-shrink:0; }
+    /* ─────────────────────────────────────────── */
+
     /* ── Liste des fiches d'une catégorie (réutilise le panneau annuaire) ── */
     .cat-item {
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
       background:white; border:1px solid rgba(168,123,39,0.12);
       border-radius:12px; padding:13px 16px; margin-bottom:8px;
       cursor:pointer; transition:all 0.18s;
       font-size:0.87rem; color:var(--navy); font-weight:500;
     }
     .cat-item:hover { border-color:var(--gold); box-shadow:0 4px 16px rgba(168,123,39,0.12); transform:translateY(-1px); }
-    .cat-item-arrow { color:var(--gold); flex-shrink:0; }
+    .cat-item-arrow { color:var(--gold); flex-shrink:0; margin-top:1px; }
+    .cat-item-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
+    .cat-item-title { line-height:1.35; }
+    .cat-item-excerpt {
+      font-size:0.76rem; font-weight:400; color:var(--text-muted); line-height:1.42;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    mark.bib-hl { background:rgba(168,123,39,0.32); color:var(--navy); border-radius:3px; padding:0 1px; font-weight:600; }
     /* ─────────────────────────────────────────── */
 
     @media (max-width:600px) {
@@ -371,7 +409,7 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
       Accueil
     </button>
-    <button class="ann-btn" onclick="toggleBiblio()">
+    <button class="ann-btn ann-btn-primary" onclick="toggleBiblio()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       Bibliothèque
     </button>
@@ -449,6 +487,15 @@
       <span class="welcome-icon">✦</span>
       <h2>Bonjour !</h2>
       <p>Posez-moi vos questions sur les procédures internes. Je m'appuie uniquement sur la base documentaire Aélys.</p>
+
+      <button class="bib-hero" onclick="toggleBiblio()">
+        <div class="bib-hero-icon">📚</div>
+        <div class="bib-hero-text">
+          <div class="bib-hero-title">Bibliothèque des procédures</div>
+          <div class="bib-hero-sub">Parcourir toutes les fiches par thème, ou rechercher un mot-clé</div>
+        </div>
+        <div class="bib-hero-arrow">→</div>
+      </button>
 
       <div class="quick-grid">
         <button class="quick-btn" onclick="openCategory('Commandes', 'Commandes')">
@@ -576,6 +623,42 @@ function setBibFilter(key) {
   renderBiblio();
 }
 
+// Surligne la première occurrence de `foldedQuery` dans `original`, en se
+// repérant sur la version repliée (accents/casse) mais en découpant le
+// texte D'ORIGINE — les lettres accentuées françaises se décomposent 1
+// pour 1 sous NFD (une lettre de base + un accent retiré), donc l'index
+// trouvé dans la version repliée reste valable sur le texte original.
+function highlightBib(original, foldedQuery) {
+  const text = original || '';
+  if (!foldedQuery) return escapeBibHtml(text);
+  const folded = foldAccents(text);
+  const idx = folded.indexOf(foldedQuery);
+  if (idx === -1) return escapeBibHtml(text);
+  const before = text.slice(0, idx);
+  const match = text.slice(idx, idx + foldedQuery.length);
+  const after = text.slice(idx + foldedQuery.length);
+  return `${escapeBibHtml(before)}<mark class="bib-hl">${escapeBibHtml(match)}</mark>${escapeBibHtml(after)}`;
+}
+
+// Construit l'aperçu (2 lignes) affiché sous chaque titre. Toujours
+// présent : par défaut le début du contenu, ou — quand la recherche
+// trouve le mot-clé dans le contenu plutôt que le titre — un extrait
+// centré sur l'endroit où il apparaît, pour qu'on puisse s'y retrouver.
+function buildBibExcerpt(contenu, foldedQuery) {
+  const text = (contenu || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  if (!foldedQuery) return text.slice(0, 160);
+  const folded = foldAccents(text);
+  const idx = folded.indexOf(foldedQuery);
+  if (idx === -1) return text.slice(0, 160);
+  const start = Math.max(0, idx - 45);
+  const end = Math.min(text.length, idx + foldedQuery.length + 115);
+  let snippet = text.slice(start, end);
+  if (start > 0) snippet = '…' + snippet;
+  if (end < text.length) snippet = snippet + '…';
+  return snippet;
+}
+
 function renderBiblio() {
   const q = foldAccents(document.getElementById('bibSearch')?.value || '');
   let filtered = DOCS_INDEX;
@@ -602,9 +685,13 @@ function renderBiblio() {
     const meta = bibThemeMeta(theme);
     html += `<div class="ann-service-label">${meta.icon} ${meta.label}</div>`;
     items.forEach(d => {
+      const excerpt = buildBibExcerpt(d.contenu, q);
       html += `
         <div class="cat-item" onclick="openBibDoc('${d.id}')">
-          <span>${escapeBibHtml(d.titre)}</span>
+          <div class="cat-item-main">
+            <span class="cat-item-title">${highlightBib(d.titre, q)}</span>
+            ${excerpt ? `<span class="cat-item-excerpt">${highlightBib(excerpt, q)}</span>` : ''}
+          </div>
           <span class="cat-item-arrow">→</span>
         </div>`;
     });
