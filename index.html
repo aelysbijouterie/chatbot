@@ -371,6 +371,10 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
       Accueil
     </button>
+    <button class="ann-btn" onclick="toggleBiblio()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Bibliothèque
+    </button>
     <button class="ann-btn" onclick="toggleAnnuaire()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Annuaire
@@ -401,6 +405,26 @@
     </div>
     <div class="ann-filters" id="annFilters"></div>
     <div class="ann-body" id="annBody"></div>
+  </div>
+  <!-- ───────────────────── -->
+
+  <!-- ── PANNEAU BIBLIOTHÈQUE (toutes les procédures) ── -->
+  <div class="annuaire-overlay" id="bibOverlay" onclick="closeBiblio()"></div>
+  <div class="annuaire-panel" id="bibPanel">
+    <div class="ann-header">
+      <div class="ann-header-left">
+        <div>
+          <div class="ann-title">📚 Bibliothèque</div>
+          <div class="ann-sub">Toutes les procédures</div>
+        </div>
+      </div>
+      <button class="ann-close" onclick="closeBiblio()">✕</button>
+    </div>
+    <div class="ann-search-wrap">
+      <input class="ann-search" id="bibSearch" placeholder="Rechercher un mot, un titre…" oninput="renderBiblio()" autocomplete="off" />
+    </div>
+    <div class="ann-filters" id="bibFilters"></div>
+    <div class="ann-body" id="bibBody"></div>
   </div>
   <!-- ───────────────────── -->
 
@@ -511,6 +535,101 @@ async function loadDocsIndex() {
   } catch(e) { DOCS_INDEX = []; }
 }
 loadDocsIndex();
+
+// ── BIBLIOTHÈQUE (toutes les procédures : classement par thème + recherche
+// par mot-clé dans le titre ET le contenu — utilise le même docs-index.json
+// que les catégories rapides ci-dessous, désormais enrichi d'un champ
+// "contenu" côté build.js) ──────────────────────────────────────────────
+const BIB_THEMES = [
+  { key:'Commandes',     label:'Commandes',      icon:'🛒' },
+  { key:'Defectueux',    label:'Défectueux',     icon:'🔍' },
+  { key:'Sav',           label:'SAV',            icon:'🔧' },
+  { key:'Vente',         label:'Vente',          icon:'💬' },
+  { key:'References',    label:'Références',     icon:'💻' },
+  { key:'Formation',     label:'Formation',      icon:'🎓' },
+  { key:'Commandes Web', label:'Commandes Web',  icon:'📦' },
+  { key:'Inventaires',   label:'Inventaires',    icon:'📋' },
+];
+const bibThemeMeta = k => BIB_THEMES.find(t => t.key === k) || { label:k, icon:'🏷️' };
+let bibActiveFilter = 'Tous';
+
+function foldAccents(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function escapeBibHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s || '';
+  return div.innerHTML;
+}
+
+function buildBibFilters() {
+  const present = [...new Set(DOCS_INDEX.map(d => d.categorie))];
+  let html = `<button class="ann-filter ${bibActiveFilter==='Tous'?'active':''}" onclick="setBibFilter('Tous')">Tous</button>`;
+  present.forEach(key => {
+    const meta = bibThemeMeta(key);
+    html += `<button class="ann-filter ${bibActiveFilter===key?'active':''}" onclick="setBibFilter('${key.replace(/'/g,"\\'")}')">${meta.icon} ${meta.label}</button>`;
+  });
+  document.getElementById('bibFilters').innerHTML = html;
+}
+
+function setBibFilter(key) {
+  bibActiveFilter = key;
+  buildBibFilters();
+  renderBiblio();
+}
+
+function renderBiblio() {
+  const q = foldAccents(document.getElementById('bibSearch')?.value || '');
+  let filtered = DOCS_INDEX;
+  if (bibActiveFilter !== 'Tous') filtered = filtered.filter(d => d.categorie === bibActiveFilter);
+  if (q) filtered = filtered.filter(d => foldAccents(d.titre + ' ' + (d.contenu || '')).includes(q));
+
+  const body = document.getElementById('bibBody');
+  if (!filtered.length) {
+    body.innerHTML = '<div class="ann-empty">Aucune procédure trouvée.</div>';
+    return;
+  }
+
+  // Groupées par thème (pertinent surtout quand "Tous" est actif ; en
+  // recherche/filtre, chaque thème présent dans les résultats garde son
+  // propre libellé pour rester repérable).
+  const byTheme = {};
+  filtered.forEach(d => {
+    if (!byTheme[d.categorie]) byTheme[d.categorie] = [];
+    byTheme[d.categorie].push(d);
+  });
+
+  let html = '';
+  for (const [theme, items] of Object.entries(byTheme)) {
+    const meta = bibThemeMeta(theme);
+    html += `<div class="ann-service-label">${meta.icon} ${meta.label}</div>`;
+    items.forEach(d => {
+      html += `
+        <div class="cat-item" onclick="openBibDoc('${d.id}')">
+          <span>${escapeBibHtml(d.titre)}</span>
+          <span class="cat-item-arrow">→</span>
+        </div>`;
+    });
+  }
+  body.innerHTML = html;
+}
+
+function openBibDoc(id) {
+  window.open('/api/pdf?id=' + encodeURIComponent(id), '_blank', 'noopener');
+}
+
+function toggleBiblio() {
+  document.getElementById('bibPanel').classList.toggle('open');
+  document.getElementById('bibOverlay').classList.toggle('open');
+  if (document.getElementById('bibPanel').classList.contains('open')) {
+    buildBibFilters();
+    renderBiblio();
+    setTimeout(() => document.getElementById('bibSearch')?.focus(), 350);
+  }
+}
+function closeBiblio() {
+  document.getElementById('bibPanel').classList.remove('open');
+  document.getElementById('bibOverlay').classList.remove('open');
+}
+// ──────────────────────────────────────────────────────────────────────
 
 function openCategory(label, categorieValue) {
   const items = DOCS_INDEX.filter(d => d.categorie === categorieValue);
@@ -930,7 +1049,7 @@ function closeAnnuaire() {
   document.getElementById('annPanel').classList.remove('open');
   document.getElementById('annOverlay').classList.remove('open');
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAnnuaire(); closeCategory(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAnnuaire(); closeCategory(); closeBiblio(); } });
 </script>
 </body>
 </html>

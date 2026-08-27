@@ -260,10 +260,16 @@ async function readPdfsRecursive(dir, base = '') {
     previousIds = null; // pas d'index précédent (premier build) : pas d'alerte
   }
 
+  // "contenu" est inclus (déjà limité à 6000 caractères pour les PDF, voir
+  // readPdfsRecursive) pour permettre la recherche par mot-clé côté magasin
+  // (onglet "Bibliothèque" de index.html) sans exposer d'endpoint dédié —
+  // le contenu complet et mis en forme reste uniquement accessible via
+  // /api/pdf?id=..., cet index ne sert qu'à filtrer/rechercher.
   const docsIndex = docs.map(d => ({
     id: d.id,
     titre: d.titre,
-    categorie: d.categorie
+    categorie: d.categorie,
+    contenu: d.contenu || ''
   }));
   fs.writeFileSync(DOCS_INDEX_FILE, JSON.stringify(docsIndex, null, 2), 'utf8');
   console.log(`✓ docs-index.json : ${docsIndex.length} fiches indexées\n`);
