@@ -803,12 +803,12 @@
 
 <script>
   // ── Authentification ────────────────────────────────────────────
-  fetch('/api/whoami').then(r => r.json()).then(data => {
+  fetch('/api/auth').then(r => r.json()).then(data => {
     if (data.magasin !== 'ADMIN') window.location.href = '/login.html';
   }).catch(() => { window.location.href = '/login.html'; });
 
   async function logout() {
-    try { await fetch('/api/logout', { method: 'POST' }); } catch(e) {}
+    try { await fetch('/api/auth?action=logout', { method: 'POST' }); } catch(e) {}
     window.location.href = '/login.html';
   }
 
@@ -1094,7 +1094,7 @@
 
     try {
       const payload = { method: currentMethod, title, theme: selectedTheme };
-      if (isEdit) payload.id = editingDocId;
+      if (isEdit) { payload.id = editingDocId; payload.action = 'edit'; }
 
       if (currentMethod === 'file') {
         if (!currentFile && !isEdit) throw new Error('Choisis un fichier.');
@@ -1106,7 +1106,7 @@
         payload.content = document.getElementById('contentInput').value.trim();
       }
 
-      const res = await fetch(isEdit ? '/api/admin-edit' : '/api/admin-publish', {
+      const res = await fetch(isEdit ? '/api/admin-doc' : '/api/admin-publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1198,10 +1198,10 @@
   async function deleteDoc(id, titre) {
     if (!confirm(`Supprimer la fiche « ${titre} » ? Cette action est irréversible.`)) return;
     try {
-      const res = await fetch('/api/admin-delete', {
+      const res = await fetch('/api/admin-doc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id, action: 'delete' })
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Erreur inconnue.');

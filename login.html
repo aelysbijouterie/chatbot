@@ -137,7 +137,7 @@
 
     // Si une session valide existe déjà, retour direct à l'appli (ou à la fiche visée) —
     // ou vers l'admin si la session est celle de l'administrateur.
-    fetch('/api/whoami').then(r => r.json()).then(data => {
+    fetch('/api/auth').then(r => r.json()).then(data => {
       if (data.magasin === 'ADMIN') window.location.href = '/admin.html';
       else if (data.magasin) window.location.href = nextUrl();
     }).catch(() => {});
@@ -153,7 +153,7 @@
       submitBtn.textContent = 'Connexion…';
 
       try {
-        const res = await fetch('/api/login', {
+        const res = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code, password })

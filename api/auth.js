@@ -1,5 +1,15 @@
-const { signSession, SESSION_COOKIE, SESSION_DURATION_MS, STORE_NAMES, ADMIN_CODE } = require('../lib/stores.js');
+const {
+  getMagasin, getMagasinNom,
+  signSession, SESSION_COOKIE, SESSION_DURATION_MS, STORE_NAMES, ADMIN_CODE,
+} = require('../lib/stores.js');
 
+// ── Authentification : connexion / déconnexion / qui suis-je ────────────
+// Un seul fichier pour ces trois opérations (limite Vercel Hobby : 12
+// fonctions serverless max, voir GUIDE-ADMIN.md) :
+//   GET  /api/auth                     → qui suis-je (magasin courant, ou rien)
+//   POST /api/auth { code, password }  → connexion (admin ou magasin)
+//   POST /api/auth?action=logout       → déconnexion
+//
 // Connexion unifiée : une seule page (login.html), un seul endpoint.
 // - Code "admin" (insensible à la casse) + ADMIN_PASSWORD  -> session admin.
 // - Un code magasin à 3 chiffres existant dans data/magasins.json, avec le
@@ -8,14 +18,18 @@ const { signSession, SESSION_COOKIE, SESSION_DURATION_MS, STORE_NAMES, ADMIN_COD
 // Configuration requise (Vercel → Settings → Environment Variables) :
 //   ADMIN_PASSWORD = Occitania-64   (ou le mot de passe de ton choix)
 
-module.exports = async function(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+function handleWhoami(req, res) {
+  const magasin = getMagasin(req);
+  const nom = magasin ? getMagasinNom(magasin) : null;
+  return res.status(200).json({ magasin, nom });
+}
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+function handleLogout(req, res) {
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`);
+  return res.status(200).json({ ok: true });
+}
 
+function handleLogin(req, res) {
   const { code, password } = req.body || {};
   if (!code || !password) {
     return res.status(401).json({ ok: false, error: 'Identifiant ou mot de passe incorrect.' });
@@ -53,4 +67,21 @@ module.exports = async function(req, res) {
     `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`
   );
   return res.status(200).json({ ok: true, isAdmin: false });
+}
+
+module.exports = async function(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (req.method === 'GET') return handleWhoami(req, res);
+
+  if (req.method === 'POST') {
+    const action = (req.query && req.query.action) || '';
+    if (action === 'logout') return handleLogout(req, res);
+    return handleLogin(req, res);
+  }
+
+  return res.status(405).json({ error: 'Method Not Allowed' });
 };

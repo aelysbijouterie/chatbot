@@ -575,7 +575,7 @@ function loadHistory() {
 
 async function loadWhoami() {
   try {
-    const res = await fetch('/api/whoami');
+    const res = await fetch('/api/auth');
     const data = await res.json();
     if (!data.magasin) {
       window.location.href = '/login.html';
@@ -592,7 +592,7 @@ async function loadWhoami() {
 loadWhoami();
 
 async function logout() {
-  try { await fetch('/api/logout', { method: 'POST' }); } catch(e) { /* silencieux */ }
+  try { await fetch('/api/auth?action=logout', { method: 'POST' }); } catch(e) { /* silencieux */ }
   window.location.href = '/login.html';
 }
 
