@@ -1055,7 +1055,7 @@ function buildFilters() {
   const services = ['Tous', ...new Set(CONTACTS.map(c => c.service))];
   const wrap = document.getElementById('annFilters');
   wrap.innerHTML = services.map(s =>
-    `<button class="ann-filter ${s === activeFilter ? 'active' : ''}" onclick="setFilter('${s}')">${s}</button>`
+    `<button class="ann-filter ${s === activeFilter ? 'active' : ''}" onclick="setFilter('${s.replace(/'/g, "\\'")}')">${s}</button>`
   ).join('');
 }
 
