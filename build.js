@@ -187,59 +187,62 @@ async function readPdfsRecursive(dir, base = '') {
     }
     if (!entry.name.toLowerCase().endsWith('.pdf')) continue;
 
+    // Métadonnées optionnelles déposées par l'admin à côté du PDF
+    // (fichier.pdf.json : { "titre": "...", "categorie": "..." }).
+    // Calculées AVANT toute tentative d'extraction de texte : le titre/thème
+    // d'une fiche ne doit jamais dépendre du succès du parsing PDF.
+    let metaOverride = null;
+    const metaPath = fullPath + '.json';
+    if (fs.existsSync(metaPath)) {
+      try { metaOverride = JSON.parse(fs.readFileSync(metaPath, 'utf8')); }
+      catch (e) { console.warn(`  ⚠ métadonnées invalides pour ${entry.name} (ignorées)`); }
+    }
+
+    // Titre = métadonnée admin si présente, sinon nom du fichier sans
+    // extension et sans préfixe numérique "X - "
+    const rawName = entry.name.replace(/\.pdf$/i, '');
+    const titre = (metaOverride && metaOverride.titre)
+      ? String(metaOverride.titre).trim()
+      : rawName.replace(/^\d+\s*[-–]\s*/, '').trim();
+
+    const relDir  = path.dirname(relPath) === '.' ? '' : path.dirname(relPath);
+    const categorie = (metaOverride && metaOverride.categorie)
+      ? String(metaOverride.categorie).trim()
+      : (categorieFromDir(relDir) || 'Procédures');
+    // Chemin réel dans le dépôt : sert à construire pdfUrl ET à ce que
+    // l'admin puisse modifier/supprimer cette fiche de façon fiable
+    // (contrairement à l'id, qui aplatit les "/" et perd l'info exacte).
+    const filePath = `procedures-pdf/${relPath.replace(/\\/g, '/')}`;
+    const pdfUrl  = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${filePath}`;
+
+    // Extraction du texte : sert UNIQUEMENT à la recherche par mots-clés,
+    // jamais à afficher le PDF (le fichier original n'est jamais modifié).
+    // Si l'extraction échoue (bibliothèque de parsing capricieuse sur
+    // certains PDF, différence de version Node entre l'ordi et Vercel,
+    // etc.), la fiche doit rester visible quand même : on ne perd JAMAIS
+    // une procédure à cause d'un souci d'extraction de texte, seule sa
+    // recherche plein texte sera moins bonne pour cette fiche précise.
+    let contenu = '';
     try {
       const buf  = fs.readFileSync(fullPath);
       const data = await pdfParse(buf, { max: 0 });
-
-      // Métadonnées optionnelles déposées par l'admin à côté du PDF
-      // (fichier.pdf.json : { "titre": "...", "categorie": "..." }).
-      // Permet de fixer le vrai titre et le thème choisi sans jamais
-      // toucher au fichier PDF lui-même, qui reste strictement identique
-      // à l'original importé.
-      let metaOverride = null;
-      const metaPath = fullPath + '.json';
-      if (fs.existsSync(metaPath)) {
-        try { metaOverride = JSON.parse(fs.readFileSync(metaPath, 'utf8')); }
-        catch (e) { console.warn(`  ⚠ métadonnées invalides pour ${entry.name} (ignorées)`); }
-      }
-
-      // Titre = métadonnée admin si présente, sinon nom du fichier sans
-      // extension et sans préfixe numérique "X - "
-      const rawName = entry.name.replace(/\.pdf$/i, '');
-      const titre = (metaOverride && metaOverride.titre)
-        ? String(metaOverride.titre).trim()
-        : rawName.replace(/^\d+\s*[-–]\s*/, '').trim();
-
-      // Contenu texte brut, limité à 6000 chars (sert uniquement à la
-      // recherche par mots-clés, jamais affiché tel quel)
-      const contenu = (data.text || '')
-        .replace(/\n{3,}/g, '\n\n').trim().slice(0, 6000);
-
-      const relDir  = path.dirname(relPath) === '.' ? '' : path.dirname(relPath);
-      const categorie = (metaOverride && metaOverride.categorie)
-        ? String(metaOverride.categorie).trim()
-        : (categorieFromDir(relDir) || 'Procédures');
-      // Chemin réel dans le dépôt : sert à construire pdfUrl ET à ce que
-      // l'admin puisse modifier/supprimer cette fiche de façon fiable
-      // (contrairement à l'id, qui aplatit les "/" et perd l'info exacte).
-      const filePath = `procedures-pdf/${relPath.replace(/\\/g, '/')}`;
-      const pdfUrl  = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${filePath}`;
-
-      docs.push({
-        id        : 'pdf-' + relPath.replace(/\.pdf$/i, '').replace(/[\\/\s]/g, '-'),
-        titre,
-        categorie,
-        motsClefs : extractKeywords(titre, contenu),
-        contenu,
-        type      : 'procedure',
-        pdfUrl,
-        path      : filePath,
-        dateMAJ   : new Date().toISOString().slice(0, 10)
-      });
+      contenu = (data.text || '').replace(/\n{3,}/g, '\n\n').trim().slice(0, 6000);
       console.log(`  PDF ✓ ${titre}`);
     } catch(e) {
-      console.warn(`  PDF ✗ ${entry.name}: ${e.message}`);
+      console.warn(`  PDF ⚠ ${entry.name} : texte non extrait (${e.message}) — fiche conservée quand même, sans indexation plein texte pour l'instant.`);
     }
+
+    docs.push({
+      id        : 'pdf-' + relPath.replace(/\.pdf$/i, '').replace(/[\\/\s]/g, '-'),
+      titre,
+      categorie,
+      motsClefs : extractKeywords(titre, contenu),
+      contenu,
+      type      : 'procedure',
+      pdfUrl,
+      path      : filePath,
+      dateMAJ   : new Date().toISOString().slice(0, 10)
+    });
   }
   return docs;
 }
