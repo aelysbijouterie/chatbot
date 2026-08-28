@@ -254,6 +254,15 @@ async function readPdfsRecursive(dir, base = '') {
   const filteredMd = mdDocs.filter(d => !pdfTitles.has(d.titre.toLowerCase().trim()));
 
   const docs = [...filteredMd, ...pdfDocs];
+
+  // Garde-fou : si le build produit 0 fiche, quelque chose s'est cassé
+  // silencieusement (ex. pdf-parse indisponible dans l'environnement de
+  // build) — mieux vaut faire échouer le déploiement bruyamment que publier
+  // un site vide à la place de l'ancien.
+  if (docs.length === 0) {
+    throw new Error('Build annulé : 0 fiche trouvée (docs/ + procedures-pdf/ vides ou illisibles). Ancien contenu conservé.');
+  }
+
   fs.writeFileSync(OUT_FILE, JSON.stringify(docs, null, 2), 'utf8');
   console.log(`\n✓ kb.json : ${filteredMd.length} MD + ${pdfDocs.length} PDF = ${docs.length} docs total\n`);
   docs.forEach(d => console.log(`  [${d.categorie}] ${d.titre} (${d.type})${d.pdfUrl ? ' 📄' : ''}`));
@@ -284,6 +293,14 @@ async function readPdfsRecursive(dir, base = '') {
     categorie: d.categorie,
     contenu: d.contenu || ''
   }));
+  if (previousIds && docsIndex.length < previousIds.size * 0.7) {
+    throw new Error(
+      `Build annulé : ${docsIndex.length} fiches trouvées contre ${previousIds.size} précédemment ` +
+      `(chute de plus de 30%). C'est presque certainement un build cassé/partiel, pas une vraie ` +
+      `suppression en masse. Ancien docs-index.json conservé — publication bloquée.`
+    );
+  }
+
   fs.writeFileSync(DOCS_INDEX_FILE, JSON.stringify(docsIndex, null, 2), 'utf8');
   console.log(`✓ docs-index.json : ${docsIndex.length} fiches indexées\n`);
 
@@ -302,4 +319,7 @@ async function readPdfsRecursive(dir, base = '') {
       }
     }
   }
-})();
+})().catch(err => {
+  console.error('\n✗ Build échoué :', err.message);
+  process.exit(1);
+});
