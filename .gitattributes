@@ -1,0 +1,7 @@
+*.pdf -text binary
+*.docx -text binary
+*.xlsx -text binary
+*.png -text binary
+*.jpg -text binary
+*.jpeg -text binary
+*.ico -text binary
