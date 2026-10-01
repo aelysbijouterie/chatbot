@@ -183,5 +183,14 @@
       "Fournitures commandes web (écrins, papiers de soie, cartons…)",
       "Questions & litiges liés au site web"
     ]
+  },
+  {
+    "nom": "Audrey Voyat",
+    "poste": "Directrice régionale - Sud-Ouest",
+    "service": "Direction",
+    "email": "audrey.voyat@aelys.fr",
+    "telephone": "06 17 10 29 75",
+    "photo": null,
+    "quiFaitQuoi": []
   }
 ]
